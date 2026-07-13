@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Goals — Rumah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F3EA;--ink:#1F3B2C;--ink-soft:#3E5949;--gray:#8A8578;
+    --gray-line:#E2DDCF;--gold:#C9A227;--gold-bg:#F3E9C9;
+    --terracotta:#C1633D;--terracotta-bg:#F3DDCF;
+    --teal:#0F6E56;--teal-bg:#DCEEE8;--rose:#B4637A;--rose-bg:#F3E0E5;
+    --card:#FFFFFF;
+    --font-display:'Fraunces',serif;--font-body:'General Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ivory);font-family:var(--font-body);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--ivory);padding-bottom:40px;}
+
+  .header{padding:28px 24px 4px;}
+  .header .title{font-family:var(--font-display);font-size:24px;font-weight:500;margin-bottom:4px;}
+  .header .sub{font-size:13px;color:var(--gray);}
+
+  .section{padding:0 20px;}
+  .add-goal-btn{
+    margin:18px 20px 4px;background:var(--card);border:1px dashed #C9C2AC;border-radius:16px;
+    padding:14px;text-align:center;font-size:13px;font-weight:500;color:var(--ink-soft);
+  }
+
+  .goal-card{
+    background:var(--card);border:0.5px solid var(--gray-line);border-radius:20px;
+    padding:22px;margin:16px 20px 0;
+  }
+  .goal-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;}
+  .goal-name{font-family:var(--font-display);font-size:20px;font-weight:500;}
+  .goal-target-date{font-family:var(--font-mono);font-size:11px;color:var(--gold);font-weight:500;margin-top:4px;}
+
+  .goal-body{display:flex;align-items:center;gap:20px;}
+  .goal-ring-big{flex-shrink:0;}
+  .goal-figures .current{font-family:var(--font-mono);font-size:26px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .goal-figures .target{font-family:var(--font-mono);font-size:13px;color:var(--gray);margin-top:2px;}
+  .goal-figures .pct{font-size:11px;color:var(--gray);margin-top:6px;}
+
+  .goal-contrib{margin-top:18px;padding-top:16px;border-top:0.5px solid var(--gray-line);}
+  .goal-contrib-label{font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;color:var(--gray);margin-bottom:10px;}
+  .contrib-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;}
+  .contrib-who{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;}
+  .contrib-dot{width:14px;height:14px;border-radius:50%;color:#fff;font-size:7.5px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .contrib-amount{font-family:var(--font-mono);font-size:12.5px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .contrib-date{font-size:10.5px;color:var(--gray);margin-left:6px;}
+
+  .goal-velocity{
+    margin-top:14px;background:var(--gold-bg);border-radius:12px;padding:11px 14px;
+    font-size:11.5px;color:#8A6A0F;line-height:1.4;
+  }
+  .goal-velocity b{font-weight:600;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="title">Goals</div>
+    <div class="sub">3 active &middot; Rp 220.000.000 saved together</div>
+  </div>
+
+  <div class="add-goal-btn">+ New goal</div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Home fund</div>
+        <div class="goal-target-date">Projected Mar 2028</div>
+      </div>
+    </div>
+    <div class="goal-body">
+      <svg class="goal-ring-big" width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#E2DDCF" stroke-width="8"/>
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#C9A227" stroke-width="8"
+          stroke-dasharray="232.5" stroke-dashoffset="139.5" stroke-linecap="round"
+          transform="rotate(-90 44 44)"/>
+      </svg>
+      <div class="goal-figures">
+        <div class="current">Rp 180jt</div>
+        <div class="target">of Rp 450jt target</div>
+        <div class="pct">40% funded</div>
+      </div>
+    </div>
+    <div class="goal-contrib">
+      <div class="goal-contrib-label">Recent contributions</div>
+      <div class="contrib-row">
+        <div class="contrib-who"><div class="contrib-dot" style="background:var(--teal);">D</div>Daniel <span class="contrib-date">Jul 5</span></div>
+        <div class="contrib-amount">+ 3.000.000</div>
+      </div>
+      <div class="contrib-row">
+        <div class="contrib-who"><div class="contrib-dot" style="background:var(--rose);">A</div>Adel <span class="contrib-date">Jul 5</span></div>
+        <div class="contrib-amount">+ 2.500.000</div>
+      </div>
+      <div class="contrib-row">
+        <div class="contrib-who"><div class="contrib-dot" style="background:var(--teal);">D</div>Daniel <span class="contrib-date">Jun 5</span></div>
+        <div class="contrib-amount">+ 3.000.000</div>
+      </div>
+    </div>
+    <div class="goal-velocity">Saving <b>~Rp 5.5jt/mo</b> combined. At this pace, you'll reach Rp 450jt by <b>March 2028</b>.</div>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Honeymoon</div>
+        <div class="goal-target-date">Projected Nov 2026</div>
+      </div>
+    </div>
+    <div class="goal-body">
+      <svg class="goal-ring-big" width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#E2DDCF" stroke-width="8"/>
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#C9A227" stroke-width="8"
+          stroke-dasharray="232.5" stroke-dashoffset="61.6" stroke-linecap="round"
+          transform="rotate(-90 44 44)"/>
+      </svg>
+      <div class="goal-figures">
+        <div class="current">Rp 32jt</div>
+        <div class="target">of Rp 45jt target</div>
+        <div class="pct">71% funded</div>
+      </div>
+    </div>
+    <div class="goal-velocity">On track — <b>Rp 13jt</b> remaining, ~4 months at current pace.</div>
+  </div>
+
+  <div class="goal-card">
+    <div class="goal-top">
+      <div>
+        <div class="goal-name">Emergency fund</div>
+        <div class="goal-target-date">Projected Jun 2027</div>
+      </div>
+    </div>
+    <div class="goal-body">
+      <svg class="goal-ring-big" width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#E2DDCF" stroke-width="8"/>
+        <circle cx="44" cy="44" r="37" fill="none" stroke="#C9A227" stroke-width="8"
+          stroke-dasharray="232.5" stroke-dashoffset="170.4" stroke-linecap="round"
+          transform="rotate(-90 44 44)"/>
+      </svg>
+      <div class="goal-figures">
+        <div class="current">Rp 8jt</div>
+        <div class="target">of Rp 30jt target</div>
+        <div class="pct">27% funded</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

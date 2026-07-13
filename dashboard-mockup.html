@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rumah — Household Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F3EA;
+    --ink:#1F3B2C;
+    --ink-soft:#3E5949;
+    --gray:#8A8578;
+    --gray-line:#E2DDCF;
+    --gold:#C9A227;
+    --gold-bg:#F3E9C9;
+    --terracotta:#C1633D;
+    --terracotta-bg:#F3DDCF;
+    --teal:#0F6E56;
+    --teal-bg:#DCEEE8;
+    --rose:#B4637A;
+    --rose-bg:#F3E0E5;
+    --card:#FFFFFF;
+    --font-display:'Fraunces',serif;
+    --font-body:'General Sans',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--ivory);
+    font-family:var(--font-body);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--ivory);
+    padding-bottom:96px;
+  }
+
+  /* ===== Header ===== */
+  .header{
+    padding:32px 24px 24px;
+  }
+  .header .month{
+    font-family:var(--font-body);
+    font-size:13px;
+    font-weight:500;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--gray);
+    margin-bottom:6px;
+  }
+  .header .total-label{
+    font-family:var(--font-display);
+    font-size:22px;
+    font-weight:500;
+    color:var(--ink);
+    margin-bottom:4px;
+  }
+  .header .total-amount{
+    font-family:var(--font-mono);
+    font-size:42px;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    font-variant-numeric:tabular-nums;
+  }
+  .header .total-sub{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--gray);
+    margin-top:6px;
+  }
+
+  /* ===== Settlement card ===== */
+  .settlement{
+    margin:0 20px 20px;
+    background:var(--terracotta-bg);
+    border:0.5px solid #D9AF95;
+    border-radius:16px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .settlement .left{display:flex;align-items:center;gap:12px;}
+  .settlement .dots{display:flex;}
+  .settlement .dot{width:22px;height:22px;border-radius:50%;font-family:var(--font-body);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;color:#fff;}
+  .dot.teal{background:var(--teal);}
+  .dot.rose{background:var(--rose);margin-left:-6px;border:2px solid var(--terracotta-bg);}
+  .settlement .text{font-size:14px;line-height:1.4;color:#5A2E19;}
+  .settlement .text b{font-weight:600;}
+  .settlement .amount{
+    font-family:var(--font-mono);
+    font-size:18px;
+    font-weight:600;
+    color:#5A2E19;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* ===== Section ===== */
+  .section{padding:8px 20px 4px;}
+  .section-title{
+    font-family:var(--font-display);
+    font-size:17px;
+    font-weight:500;
+    color:var(--ink);
+    margin:20px 0 12px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .section-title .view-all{
+    font-family:var(--font-body);
+    font-size:12px;
+    font-weight:500;
+    color:var(--gray);
+    letter-spacing:0.02em;
+  }
+
+  /* ===== Budget ledger rows ===== */
+  .budget-card{
+    background:var(--card);
+    border:0.5px solid var(--gray-line);
+    border-radius:16px;
+    padding:6px 18px;
+  }
+  .budget-row{
+    padding:14px 0;
+    border-bottom:0.5px solid var(--gray-line);
+  }
+  .budget-row:last-child{border-bottom:none;}
+  .budget-row-top{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .budget-row-label{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+    font-weight:500;
+  }
+  .budget-row-icon{
+    width:26px;height:26px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;
+  }
+  .budget-row-figures{
+    font-family:var(--font-mono);
+    font-size:13px;
+    font-variant-numeric:tabular-nums;
+    color:var(--ink-soft);
+  }
+  .budget-row-figures .limit{color:var(--gray);}
+  .bar-track{
+    height:5px;
+    background:var(--gray-line);
+    border-radius:3px;
+    overflow:hidden;
+  }
+  .bar-fill{height:100%;border-radius:3px;}
+  .bar-fill.gold{background:var(--gold);}
+  .bar-fill.terracotta{background:var(--terracotta);}
+  .split-tag{
+    font-family:var(--font-mono);
+    font-size:10px;
+    padding:2px 6px;
+    border-radius:5px;
+    margin-left:6px;
+    font-weight:500;
+  }
+
+  /* ===== Goals ===== */
+  .goals-row{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .goal-card{
+    flex:0 0 auto;
+    width:150px;
+    background:var(--card);
+    border:0.5px solid var(--gray-line);
+    border-radius:16px;
+    padding:16px;
+  }
+  .goal-ring{
+    width:52px;height:52px;
+    border-radius:50%;
+    margin-bottom:10px;
+    position:relative;
+  }
+  .goal-name{font-size:13px;font-weight:500;margin-bottom:4px;}
+  .goal-amount{font-family:var(--font-mono);font-size:12px;color:var(--gray);}
+  .goal-date{font-family:var(--font-mono);font-size:11px;color:var(--gold);margin-top:6px;font-weight:500;}
+
+  /* ===== Transactions ===== */
+  .txn-card{
+    background:var(--card);
+    border:0.5px solid var(--gray-line);
+    border-radius:16px;
+    padding:4px 18px;
+  }
+  .txn-day-label{
+    font-family:var(--font-body);
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.05em;
+    text-transform:uppercase;
+    color:var(--gray);
+    padding:14px 0 6px;
+  }
+  .txn-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 0;
+    border-bottom:0.5px solid var(--gray-line);
+  }
+  .txn-row:last-child{border-bottom:none;}
+  .txn-icon{
+    width:34px;height:34px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:15px;flex-shrink:0;
+  }
+  .txn-info{flex:1;min-width:0;}
+  .txn-note{font-size:13.5px;font-weight:500;}
+  .txn-meta{font-size:11.5px;color:var(--gray);margin-top:2px;}
+  .txn-right{text-align:right;}
+  .txn-amount{
+    font-family:var(--font-mono);
+    font-size:14px;
+    font-weight:500;
+    font-variant-numeric:tabular-nums;
+  }
+  .txn-split-dots{display:flex;justify-content:flex-end;gap:3px;margin-top:5px;}
+  .txn-split-dots .d{width:6px;height:6px;border-radius:50%;}
+
+  /* ===== FAB ===== */
+  .fab{
+    position:fixed;
+    bottom:28px;left:50%;
+    transform:translateX(-50%);
+    width:min(432px,calc(100% - 48px));
+    background:var(--ink);
+    color:var(--ivory);
+    border-radius:16px;
+    padding:15px;
+    text-align:center;
+    font-family:var(--font-body);
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:0.02em;
+    box-shadow:0 8px 24px rgba(31,59,44,0.25);
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="month">July 2026</div>
+    <div class="total-label">Total spent</div>
+    <div class="total-amount">Rp 8.240.000</div>
+    <div class="total-sub">of Rp 10.500.000 budgeted &middot; 78%</div>
+  </div>
+
+  <div class="settlement">
+    <div class="left">
+      <div class="dots">
+        <div class="dot teal">D</div>
+        <div class="dot rose">A</div>
+      </div>
+      <div class="text">Daniel owes<br><b>Adel</b> this month</div>
+    </div>
+    <div class="amount">Rp 340.000</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Budgets <span class="view-all">View all</span></div>
+    <div class="budget-card">
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--teal-bg);">🛒</div>
+            Groceries
+            <span class="split-tag" style="background:var(--teal-bg);color:var(--teal);">50/50</span>
+          </div>
+          <div class="budget-row-figures">2.100.000 <span class="limit">/ 2.500.000</span></div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:84%;"></div></div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--rose-bg);">🚗</div>
+            Transport
+            <span class="split-tag" style="background:var(--rose-bg);color:var(--rose);">70/30</span>
+          </div>
+          <div class="budget-row-figures">1.850.000 <span class="limit">/ 1.500.000</span></div>
+        </div>
+        <div class="bar-track"><div class="bar-fill terracotta" style="width:100%;"></div></div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--gold-bg);">💍</div>
+            Wedding fund
+            <span class="split-tag" style="background:var(--gold-bg);color:#8A6A0F;">custom</span>
+          </div>
+          <div class="budget-row-figures">3.200.000 <span class="limit">/ 5.000.000</span></div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:64%;"></div></div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--teal-bg);">🏋️</div>
+            Daniel — Gym
+            <span class="split-tag" style="background:var(--teal-bg);color:var(--teal);">100/0</span>
+          </div>
+          <div class="budget-row-figures">450.000 <span class="limit">/ 500.000</span></div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:90%;"></div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Goals</div>
+    <div class="goals-row">
+
+      <div class="goal-card">
+        <svg class="goal-ring" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#E2DDCF" stroke-width="5"/>
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#C9A227" stroke-width="5"
+            stroke-dasharray="138.2" stroke-dashoffset="55.3" stroke-linecap="round"
+            transform="rotate(-90 26 26)"/>
+        </svg>
+        <div class="goal-name">Home fund</div>
+        <div class="goal-amount">180jt / 450jt</div>
+        <div class="goal-date">~Mar 2028</div>
+      </div>
+
+      <div class="goal-card">
+        <svg class="goal-ring" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#E2DDCF" stroke-width="5"/>
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#C9A227" stroke-width="5"
+            stroke-dasharray="138.2" stroke-dashoffset="30.4" stroke-linecap="round"
+            transform="rotate(-90 26 26)"/>
+        </svg>
+        <div class="goal-name">Honeymoon</div>
+        <div class="goal-amount">32jt / 45jt</div>
+        <div class="goal-date">~Nov 2026</div>
+      </div>
+
+      <div class="goal-card">
+        <svg class="goal-ring" viewBox="0 0 52 52">
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#E2DDCF" stroke-width="5"/>
+          <circle cx="26" cy="26" r="22" fill="none" stroke="#C9A227" stroke-width="5"
+            stroke-dasharray="138.2" stroke-dashoffset="103.6" stroke-linecap="round"
+            transform="rotate(-90 26 26)"/>
+        </svg>
+        <div class="goal-name">Emergency</div>
+        <div class="goal-amount">8jt / 30jt</div>
+        <div class="goal-date">~Jun 2027</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Recent transactions <span class="view-all">View all</span></div>
+    <div class="txn-card">
+
+      <div class="txn-day-label">Today</div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--teal-bg);">🛒</div>
+        <div class="txn-info">
+          <div class="txn-note">Superindo — weekly groceries</div>
+          <div class="txn-meta">Paid by Adel</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">Rp 340.000</div>
+          <div class="txn-split-dots">
+            <div class="d" style="background:var(--teal);"></div>
+            <div class="d" style="background:var(--rose);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--gold-bg);">💐</div>
+        <div class="txn-info">
+          <div class="txn-note">Vendor DP — florist</div>
+          <div class="txn-meta">Paid by Daniel · Wedding fund</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">Rp 1.500.000</div>
+          <div class="txn-split-dots">
+            <div class="d" style="background:var(--teal);"></div>
+            <div class="d" style="background:var(--rose);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="txn-day-label">Yesterday</div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--rose-bg);">⛽</div>
+        <div class="txn-info">
+          <div class="txn-note">Pertamina — fuel</div>
+          <div class="txn-meta">Paid by Daniel</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">Rp 200.000</div>
+          <div class="txn-split-dots">
+            <div class="d" style="background:var(--teal);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--teal-bg);">💪</div>
+        <div class="txn-info">
+          <div class="txn-note">Gym membership</div>
+          <div class="txn-meta">Paid by Daniel · Personal</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">Rp 450.000</div>
+          <div class="txn-split-dots">
+            <div class="d" style="background:var(--teal);"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="fab">+ Add transaction</div>
+
+</body>
+</html>

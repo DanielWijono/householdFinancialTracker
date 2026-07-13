@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+body {
+  background-color: theme(colors.ivory);
+  color: theme(colors.ink.DEFAULT);
+  font-family: var(--font-general-sans), sans-serif;
+}
+
+.font-mono,
+[class*="font-mono"] {
+  font-variant-numeric: tabular-nums;
+}

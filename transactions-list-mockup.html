@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transactions — Rumah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F3EA;--ink:#1F3B2C;--ink-soft:#3E5949;--gray:#8A8578;
+    --gray-line:#E2DDCF;--gold:#C9A227;--gold-bg:#F3E9C9;
+    --terracotta:#C1633D;--terracotta-bg:#F3DDCF;
+    --teal:#0F6E56;--teal-bg:#DCEEE8;--rose:#B4637A;--rose-bg:#F3E0E5;
+    --card:#FFFFFF;
+    --font-display:'Fraunces',serif;--font-body:'General Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ivory);font-family:var(--font-body);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--ivory);padding-bottom:40px;}
+
+  .header{padding:28px 24px 16px;}
+  .header .title{font-family:var(--font-display);font-size:24px;font-weight:500;margin-bottom:4px;}
+  .header .sub{font-size:13px;color:var(--gray);}
+
+  /* Filter chips */
+  .filters{display:flex;gap:8px;padding:0 20px 16px;overflow-x:auto;}
+  .filter-chip{
+    flex:0 0 auto;font-size:12.5px;font-weight:500;padding:8px 14px;border-radius:20px;
+    border:0.5px solid var(--gray-line);background:var(--card);color:var(--ink-soft);white-space:nowrap;
+  }
+  .filter-chip.active{background:var(--ink);color:var(--ivory);border-color:var(--ink);}
+
+  /* Month summary strip */
+  .summary-strip{
+    margin:0 20px 20px;background:var(--card);border:0.5px solid var(--gray-line);
+    border-radius:16px;padding:14px 18px;display:flex;justify-content:space-between;
+  }
+  .summary-item{text-align:center;flex:1;}
+  .summary-item + .summary-item{border-left:0.5px solid var(--gray-line);}
+  .summary-value{font-family:var(--font-mono);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .summary-label{font-size:10.5px;color:var(--gray);margin-top:3px;letter-spacing:0.02em;}
+  .summary-value.teal{color:var(--teal);}
+  .summary-value.rose{color:var(--rose);}
+
+  .section{padding:0 20px;}
+  .txn-card{background:var(--card);border:0.5px solid var(--gray-line);border-radius:16px;padding:4px 18px;margin-bottom:14px;}
+  .txn-day-label{
+    font-size:11px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;
+    color:var(--gray);padding:14px 0 6px;display:flex;justify-content:space-between;
+  }
+  .txn-day-total{font-family:var(--font-mono);font-weight:500;color:var(--ink-soft);}
+  .txn-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--gray-line);}
+  .txn-row:last-child{border-bottom:none;}
+  .txn-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+  .txn-info{flex:1;min-width:0;}
+  .txn-note{font-size:13.5px;font-weight:500;}
+  .txn-meta{font-size:11.5px;color:var(--gray);margin-top:2px;display:flex;align-items:center;gap:5px;}
+  .txn-meta .paidby-dot{width:13px;height:13px;border-radius:50%;color:#fff;font-size:7px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+  .txn-right{text-align:right;}
+  .txn-amount{font-family:var(--font-mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;}
+  .txn-split-bar{width:42px;height:4px;border-radius:2px;overflow:hidden;display:flex;margin-top:6px;margin-left:auto;}
+  .txn-split-bar .d{background:var(--teal);}
+  .txn-split-bar .a{background:var(--rose);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="title">Transactions</div>
+    <div class="sub">July 2026 &middot; 24 entries</div>
+  </div>
+
+  <div class="filters">
+    <div class="filter-chip active">All</div>
+    <div class="filter-chip">Shared</div>
+    <div class="filter-chip">Daniel</div>
+    <div class="filter-chip">Adel</div>
+    <div class="filter-chip">Wedding</div>
+  </div>
+
+  <div class="summary-strip">
+    <div class="summary-item">
+      <div class="summary-value">8.240.000</div>
+      <div class="summary-label">Total spent</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-value teal">4.610.000</div>
+      <div class="summary-label">Paid by Daniel</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-value rose">3.630.000</div>
+      <div class="summary-label">Paid by Adel</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="txn-card">
+
+      <div class="txn-day-label">Today, Jul 12 <span class="txn-day-total">1.840.000</span></div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--teal-bg);">🛒</div>
+        <div class="txn-info">
+          <div class="txn-note">Superindo — weekly groceries</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--rose);">A</div> Adel · Groceries</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">340.000</div>
+          <div class="txn-split-bar"><div class="d" style="width:50%;height:4px;"></div><div class="a" style="width:50%;height:4px;"></div></div>
+        </div>
+      </div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--gold-bg);">💐</div>
+        <div class="txn-info">
+          <div class="txn-note">Vendor DP — florist</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--teal);">D</div> Daniel · Wedding fund</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">1.500.000</div>
+          <div class="txn-split-bar"><div class="d" style="width:50%;height:4px;"></div><div class="a" style="width:50%;height:4px;"></div></div>
+        </div>
+      </div>
+
+      <div class="txn-day-label">Yesterday, Jul 11 <span class="txn-day-total">650.000</span></div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--rose-bg);">⛽</div>
+        <div class="txn-info">
+          <div class="txn-note">Pertamina — fuel</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--teal);">D</div> Daniel · Transport</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">200.000</div>
+          <div class="txn-split-bar"><div class="d" style="width:70%;height:4px;"></div><div class="a" style="width:30%;height:4px;"></div></div>
+        </div>
+      </div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--teal-bg);">💪</div>
+        <div class="txn-info">
+          <div class="txn-note">Gym membership</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--teal);">D</div> Daniel · Personal</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">450.000</div>
+          <div class="txn-split-bar"><div class="d" style="width:100%;height:4px;"></div></div>
+        </div>
+      </div>
+
+      <div class="txn-day-label">Jul 9 <span class="txn-day-total">1.200.000</span></div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--rose-bg);">🍽️</div>
+        <div class="txn-info">
+          <div class="txn-note">Dinner — Plataran</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--rose);">A</div> Adel · Dining</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">650.000</div>
+          <div class="txn-split-bar"><div class="d" style="width:50%;height:4px;"></div><div class="a" style="width:50%;height:4px;"></div></div>
+        </div>
+      </div>
+
+      <div class="txn-row">
+        <div class="txn-icon" style="background:var(--rose-bg);">💄</div>
+        <div class="txn-info">
+          <div class="txn-note">Skincare restock</div>
+          <div class="txn-meta"><div class="paidby-dot" style="background:var(--rose);">A</div> Adel · Personal</div>
+        </div>
+        <div class="txn-right">
+          <div class="txn-amount">550.000</div>
+          <div class="txn-split-bar"><div class="a" style="width:100%;height:4px;"></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

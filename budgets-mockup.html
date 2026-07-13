@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budgets — Rumah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F3EA;--ink:#1F3B2C;--ink-soft:#3E5949;--gray:#8A8578;
+    --gray-line:#E2DDCF;--gold:#C9A227;--gold-bg:#F3E9C9;
+    --terracotta:#C1633D;--terracotta-bg:#F3DDCF;
+    --teal:#0F6E56;--teal-bg:#DCEEE8;--rose:#B4637A;--rose-bg:#F3E0E5;
+    --card:#FFFFFF;
+    --font-display:'Fraunces',serif;--font-body:'General Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ivory);font-family:var(--font-body);color:var(--ink);-webkit-font-smoothing:antialiased;}
+  .app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--ivory);padding-bottom:40px;}
+
+  .header{padding:28px 24px 4px;display:flex;justify-content:space-between;align-items:flex-start;}
+  .header .title{font-family:var(--font-display);font-size:24px;font-weight:500;margin-bottom:4px;}
+  .header .sub{font-size:13px;color:var(--gray);}
+  .month-nav{display:flex;align-items:center;gap:10px;font-family:var(--font-mono);font-size:12px;color:var(--gray);}
+  .month-nav .arrow{width:22px;height:22px;border-radius:50%;background:var(--card);border:0.5px solid var(--gray-line);display:flex;align-items:center;justify-content:center;font-size:11px;}
+
+  /* Overview ring strip */
+  .overview{
+    margin:18px 20px 22px;background:var(--card);border:0.5px solid var(--gray-line);
+    border-radius:18px;padding:20px;display:flex;align-items:center;gap:18px;
+  }
+  .overview-ring{flex-shrink:0;}
+  .overview-text .big{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .overview-text .small{font-size:12px;color:var(--gray);margin-top:2px;}
+  .overview-text .warn{color:var(--terracotta);font-weight:500;}
+
+  .section{padding:0 20px;}
+  .section-title{
+    font-family:var(--font-display);font-size:16px;font-weight:500;margin:18px 0 10px;
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .add-budget{font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--gray);}
+
+  .budget-card{background:var(--card);border:0.5px solid var(--gray-line);border-radius:16px;padding:4px 18px;margin-bottom:16px;}
+  .budget-row{padding:16px 0;border-bottom:0.5px solid var(--gray-line);}
+  .budget-row:last-child{border-bottom:none;}
+  .budget-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .budget-row-label{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:500;}
+  .budget-row-icon{width:28px;height:28px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .split-tag{font-family:var(--font-mono);font-size:9.5px;padding:2px 6px;border-radius:5px;font-weight:500;}
+  .status-tag{font-family:var(--font-mono);font-size:11px;font-weight:500;}
+  .status-tag.ok{color:var(--gold);}
+  .status-tag.over{color:var(--terracotta);}
+  .bar-track{height:6px;background:var(--gray-line);border-radius:3px;overflow:hidden;margin-bottom:8px;}
+  .bar-fill{height:100%;border-radius:3px;}
+  .bar-fill.gold{background:var(--gold);}
+  .bar-fill.terracotta{background:var(--terracotta);}
+  .budget-row-bottom{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .budget-row-bottom .limit{color:var(--gray);}
+  .budget-row-bottom .remaining{color:var(--gray);}
+  .budget-row-bottom .remaining.over{color:var(--terracotta);}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div>
+      <div class="title">Budgets</div>
+      <div class="sub">6 categories tracked</div>
+    </div>
+    <div class="month-nav">
+      <div class="arrow">‹</div> Jul 2026 <div class="arrow">›</div>
+    </div>
+  </div>
+
+  <div class="overview">
+    <svg class="overview-ring" width="64" height="64" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="27" fill="none" stroke="#E2DDCF" stroke-width="6"/>
+      <circle cx="32" cy="32" r="27" fill="none" stroke="#C1633D" stroke-width="6"
+        stroke-dasharray="169.6" stroke-dashoffset="30.5" stroke-linecap="round"
+        transform="rotate(-90 32 32)"/>
+    </svg>
+    <div class="overview-text">
+      <div class="big">Rp 8.240.000</div>
+      <div class="small">of Rp 10.500.000 &middot; <span class="warn">1 category over budget</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Shared <span class="add-budget">+ Add category</span></div>
+    <div class="budget-card">
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--teal-bg);">🛒</div>
+            Groceries
+            <span class="split-tag" style="background:var(--teal-bg);color:var(--teal);">50/50</span>
+          </div>
+          <div class="status-tag ok">84%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:84%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>2.100.000 <span class="limit">/ 2.500.000</span></span>
+          <span class="remaining">400.000 left</span>
+        </div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--rose-bg);">🚗</div>
+            Transport
+            <span class="split-tag" style="background:var(--rose-bg);color:var(--rose);">70/30</span>
+          </div>
+          <div class="status-tag over">123%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill terracotta" style="width:100%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>1.850.000 <span class="limit">/ 1.500.000</span></span>
+          <span class="remaining over">350.000 over</span>
+        </div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--gold-bg);">💡</div>
+            Utilities
+            <span class="split-tag" style="background:var(--teal-bg);color:var(--teal);">50/50</span>
+          </div>
+          <div class="status-tag ok">61%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:61%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>915.000 <span class="limit">/ 1.500.000</span></span>
+          <span class="remaining">585.000 left</span>
+        </div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--gold-bg);">💍</div>
+            Wedding fund
+            <span class="split-tag" style="background:var(--gold-bg);color:#8A6A0F;">custom</span>
+          </div>
+          <div class="status-tag ok">64%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:64%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>3.200.000 <span class="limit">/ 5.000.000</span></span>
+          <span class="remaining">1.800.000 left</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Personal <span class="add-budget">+ Add category</span></div>
+    <div class="budget-card">
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--teal-bg);">🏋️</div>
+            Daniel — Gym
+            <span class="split-tag" style="background:var(--teal-bg);color:var(--teal);">100/0</span>
+          </div>
+          <div class="status-tag ok">90%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:90%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>450.000 <span class="limit">/ 500.000</span></span>
+          <span class="remaining">50.000 left</span>
+        </div>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-row-top">
+          <div class="budget-row-label">
+            <div class="budget-row-icon" style="background:var(--rose-bg);">💄</div>
+            Adel — Skincare
+            <span class="split-tag" style="background:var(--rose-bg);color:var(--rose);">0/100</span>
+          </div>
+          <div class="status-tag ok">55%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:55%;"></div></div>
+        <div class="budget-row-bottom">
+          <span>550.000 <span class="limit">/ 1.000.000</span></span>
+          <span class="remaining">450.000 left</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

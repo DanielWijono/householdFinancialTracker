@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add transaction — Rumah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ivory:#F7F3EA;--ink:#1F3B2C;--ink-soft:#3E5949;--gray:#8A8578;
+    --gray-line:#E2DDCF;--gold:#C9A227;--gold-bg:#F3E9C9;
+    --terracotta:#C1633D;--terracotta-bg:#F3DDCF;
+    --teal:#0F6E56;--teal-bg:#DCEEE8;--rose:#B4637A;--rose-bg:#F3E0E5;
+    --card:#FFFFFF;
+    --font-display:'Fraunces',serif;--font-body:'General Sans',sans-serif;--font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ink);font-family:var(--font-body);color:var(--ink);}
+  .backdrop{
+    max-width:480px;margin:0 auto;min-height:100vh;
+    background:rgba(31,59,44,0.55);
+    display:flex;align-items:flex-end;
+  }
+  .sheet{
+    width:100%;background:var(--ivory);
+    border-radius:24px 24px 0 0;
+    padding:12px 24px 28px;
+    box-shadow:0 -12px 40px rgba(0,0,0,0.2);
+  }
+  .grabber{
+    width:36px;height:4px;background:var(--gray-line);border-radius:2px;
+    margin:0 auto 18px;
+  }
+  .sheet-title{
+    font-family:var(--font-display);font-size:19px;font-weight:500;
+    margin-bottom:20px;
+  }
+
+  /* Amount */
+  .amount-block{text-align:center;margin-bottom:22px;}
+  .amount-currency{font-family:var(--font-mono);font-size:15px;color:var(--gray);}
+  .amount-value{
+    font-family:var(--font-mono);font-size:44px;font-weight:600;
+    color:var(--ink);letter-spacing:-0.01em;font-variant-numeric:tabular-nums;
+  }
+  .amount-caret{display:inline-block;width:2px;height:36px;background:var(--terracotta);vertical-align:-6px;margin-left:2px;animation:blink 1.1s infinite;}
+  @keyframes blink{0%,49%{opacity:1;}50%,100%{opacity:0;}}
+
+  /* Category grid */
+  .field-label{
+    font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--gray);margin:18px 0 10px;
+  }
+  .category-grid{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+  }
+  .cat-chip{
+    background:var(--card);border:0.5px solid var(--gray-line);border-radius:14px;
+    padding:12px 6px;text-align:center;
+  }
+  .cat-chip.active{border:1.5px solid var(--teal);background:var(--teal-bg);}
+  .cat-icon{font-size:18px;margin-bottom:5px;}
+  .cat-name{font-size:10.5px;font-weight:500;color:var(--ink-soft);}
+
+  /* Split control */
+  .split-card{
+    background:var(--card);border:0.5px solid var(--gray-line);border-radius:16px;
+    padding:16px;margin-top:8px;
+  }
+  .split-row-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;}
+  .split-label{font-size:13px;font-weight:500;}
+  .split-values{font-family:var(--font-mono);font-size:12.5px;font-variant-numeric:tabular-nums;}
+  .split-values .d-val{color:var(--teal);font-weight:600;}
+  .split-values .a-val{color:var(--rose);font-weight:600;}
+  .split-bar{
+    height:10px;border-radius:6px;overflow:hidden;display:flex;position:relative;
+  }
+  .split-bar .seg-d{background:var(--teal);width:50%;}
+  .split-bar .seg-a{background:var(--rose);width:50%;}
+  .split-handle{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:18px;height:18px;border-radius:50%;background:#fff;
+    border:2px solid var(--ink);
+  }
+  .split-caption{font-size:11px;color:var(--gray);margin-top:8px;}
+
+  /* Paid by */
+  .paidby-row{display:flex;gap:10px;margin-top:8px;}
+  .paidby-chip{
+    flex:1;background:var(--card);border:0.5px solid var(--gray-line);border-radius:12px;
+    padding:12px;display:flex;align-items:center;gap:8px;justify-content:center;
+    font-size:13px;font-weight:500;
+  }
+  .paidby-chip.active{border:1.5px solid var(--ink);}
+  .paidby-dot{width:18px;height:18px;border-radius:50%;color:#fff;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;}
+
+  /* Note field */
+  .note-input{
+    width:100%;background:var(--card);border:0.5px solid var(--gray-line);border-radius:12px;
+    padding:13px 14px;font-family:var(--font-body);font-size:13.5px;color:var(--ink);margin-top:8px;
+  }
+
+  .save-btn{
+    width:100%;background:var(--ink);color:var(--ivory);border:none;border-radius:14px;
+    padding:16px;font-family:var(--font-body);font-size:14.5px;font-weight:500;
+    margin-top:22px;letter-spacing:0.01em;
+  }
+</style>
+</head>
+<body>
+<div class="backdrop">
+  <div class="sheet">
+    <div class="grabber"></div>
+    <div class="sheet-title">Add transaction</div>
+
+    <div class="amount-block">
+      <div class="amount-currency">Rp</div>
+      <span class="amount-value">125.000<span class="amount-caret"></span></span>
+    </div>
+
+    <div class="field-label">Category</div>
+    <div class="category-grid">
+      <div class="cat-chip active"><div class="cat-icon">🛒</div><div class="cat-name">Groceries</div></div>
+      <div class="cat-chip"><div class="cat-icon">🚗</div><div class="cat-name">Transport</div></div>
+      <div class="cat-chip"><div class="cat-icon">🍽️</div><div class="cat-name">Dining</div></div>
+      <div class="cat-chip"><div class="cat-icon">💍</div><div class="cat-name">Wedding</div></div>
+      <div class="cat-chip"><div class="cat-icon">🏋️</div><div class="cat-name">Gym</div></div>
+      <div class="cat-chip"><div class="cat-icon">🏠</div><div class="cat-name">Rent</div></div>
+      <div class="cat-chip"><div class="cat-icon">💡</div><div class="cat-name">Utilities</div></div>
+      <div class="cat-chip"><div class="cat-icon">➕</div><div class="cat-name">More</div></div>
+    </div>
+
+    <div class="field-label">Split</div>
+    <div class="split-card">
+      <div class="split-row-top">
+        <div class="split-label">Groceries default</div>
+        <div class="split-values"><span class="d-val">Daniel 50%</span> · <span class="a-val">Adel 50%</span></div>
+      </div>
+      <div class="split-bar">
+        <div class="seg-d"></div><div class="seg-a"></div>
+        <div class="split-handle"></div>
+      </div>
+      <div class="split-caption">Drag to override for this transaction only</div>
+    </div>
+
+    <div class="field-label">Paid by</div>
+    <div class="paidby-row">
+      <div class="paidby-chip active">
+        <div class="paidby-dot" style="background:var(--teal);">D</div> Daniel
+      </div>
+      <div class="paidby-chip">
+        <div class="paidby-dot" style="background:var(--rose);">A</div> Adel
+      </div>
+    </div>
+
+    <div class="field-label">Note</div>
+    <input class="note-input" value="Superindo — weekly groceries" />
+
+    <button class="save-btn">Save transaction</button>
+  </div>
+</div>
+</body>
+</html>
