@@ -105,22 +105,24 @@ export default function AddTransactionSheet() {
             </span>
           </div>
 
-          <div
-            className="relative h-2.5 overflow-hidden rounded-full"
-            style={{
-              background: `linear-gradient(to right, #0F6E56 0%, #0F6E56 ${splitDaniel}%, #B4637A ${splitDaniel}%, #B4637A 100%)`,
-            }}
-          />
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={SPLIT_STEP}
-            value={splitDaniel}
-            onChange={(e) => setSplitDaniel(Number(e.target.value))}
-            className="mt-[-10px] h-2.5 w-full cursor-pointer opacity-0"
-            aria-label="Daniel split percentage"
-          />
+          <div className="relative flex h-[18px] items-center">
+            <div
+              className="pointer-events-none absolute inset-x-0 h-2.5 overflow-hidden rounded-full"
+              style={{
+                background: `linear-gradient(to right, #0F6E56 0%, #0F6E56 ${splitDaniel}%, #B4637A ${splitDaniel}%, #B4637A 100%)`,
+              }}
+            />
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={SPLIT_STEP}
+              value={splitDaniel}
+              onChange={(e) => setSplitDaniel(Number(e.target.value))}
+              className="relative w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-ink [&::-moz-range-thumb]:bg-white [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-ink [&::-webkit-slider-thumb]:bg-white"
+              aria-label="Daniel split percentage"
+            />
+          </div>
           <p className="mt-2 text-[11px] text-gray">Drag to override for this transaction only</p>
         </div>
 
