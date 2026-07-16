@@ -50,7 +50,9 @@ export default function Dashboard() {
       <section className="px-5 pt-2">
         <div className="mb-3 mt-5 flex items-center justify-between font-display text-[17px] font-medium text-ink">
           Budgets
-          <span className="font-body text-xs font-medium text-gray">View all</span>
+          <Link href="/budgets" className="font-body text-xs font-medium text-gray">
+            View all
+          </Link>
         </div>
         <div className="rounded-card border-[0.5px] border-gray-line bg-card px-[18px] py-1.5">
           {budgets.map((b) => (

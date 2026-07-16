@@ -32,8 +32,10 @@ export type Budget = {
 export const budgets: Budget[] = [
   { categoryId: "groceries", monthLimit: 2500000 },
   { categoryId: "transport", monthLimit: 1500000 },
+  { categoryId: "utilities", monthLimit: 1500000 },
   { categoryId: "wedding", monthLimit: 5000000 },
   { categoryId: "gym", monthLimit: 500000 },
+  { categoryId: "skincare", monthLimit: 1000000 },
 ];
 
 export type Goal = {
