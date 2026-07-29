@@ -12,11 +12,18 @@ function spentFor(categoryId: string) {
     .reduce((sum, t) => sum + t.amount, 0);
 }
 
+function jointSpentFor(categoryId: string) {
+  return transactions
+    .filter((t) => t.categoryId === categoryId && t.paidBy === "joint")
+    .reduce((sum, t) => sum + t.amount, 0);
+}
+
 export default function BudgetsPage() {
   const sharedBudgets = budgets.filter((b) => !categoryOf(b.categoryId).isPersonal);
   const personalBudgets = budgets.filter((b) => categoryOf(b.categoryId).isPersonal);
 
   const totalSpent = budgets.reduce((sum, b) => sum + spentFor(b.categoryId), 0);
+  const totalJoint = budgets.reduce((sum, b) => sum + jointSpentFor(b.categoryId), 0);
   const totalLimit = budgets.reduce((sum, b) => sum + b.monthLimit, 0);
   const overCount = budgets.filter((b) => spentFor(b.categoryId) > b.monthLimit).length;
   const overallPct = Math.min(1, totalSpent / totalLimit);
@@ -73,6 +80,9 @@ export default function BudgetsPage() {
               </>
             )}
           </div>
+          {totalJoint > 0 && (
+            <div className="mt-1 text-xs text-gold">{formatIDR(totalJoint)} from joint account</div>
+          )}
         </div>
       </div>
 
@@ -102,6 +112,7 @@ function BudgetSection({ title, items }: { title: string; items: typeof budgets 
 function BudgetRow({ budget }: { budget: (typeof budgets)[number] }) {
   const category = categoryOf(budget.categoryId);
   const spent = spentFor(budget.categoryId);
+  const joint = jointSpentFor(budget.categoryId);
   const pct = Math.round((spent / budget.monthLimit) * 100);
   const over = spent > budget.monthLimit;
   const barPct = Math.min(100, pct);
@@ -153,6 +164,11 @@ function BudgetRow({ budget }: { budget: (typeof budgets)[number] }) {
           {new Intl.NumberFormat("id-ID").format(remaining)} {over ? "over" : "left"}
         </span>
       </div>
+      {joint > 0 && (
+        <div className="mt-1.5 text-[10.5px] text-gold">
+          {new Intl.NumberFormat("id-ID").format(joint)} from joint account
+        </div>
+      )}
     </div>
   );
 }
