@@ -4,15 +4,21 @@ import { useMemo, useState } from "react";
 import { categories } from "../../lib/categories";
 import { transactions as allTransactions, type Transaction } from "../../lib/mock-data";
 
-const PERSON_LABEL = { daniel: "Daniel", adel: "Adel" } as const;
+const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
+const PERSON_BADGE: Record<keyof typeof PERSON_LABEL, string> = {
+  daniel: "#0F6E56",
+  adel: "#B4637A",
+  joint: "#C9A227",
+};
 
-type Filter = "all" | "shared" | "daniel" | "adel" | "wedding";
+type Filter = "all" | "shared" | "daniel" | "adel" | "joint" | "wedding";
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "shared", label: "Shared" },
   { id: "daniel", label: "Daniel" },
   { id: "adel", label: "Adel" },
+  { id: "joint", label: "Joint" },
   { id: "wedding", label: "Wedding" },
 ];
 
@@ -60,6 +66,7 @@ export default function TransactionsList() {
   const totalSpent = filtered.reduce((sum, t) => sum + t.amount, 0);
   const paidDaniel = filtered.filter((t) => t.paidBy === "daniel").reduce((s, t) => s + t.amount, 0);
   const paidAdel = filtered.filter((t) => t.paidBy === "adel").reduce((s, t) => s + t.amount, 0);
+  const paidJoint = filtered.filter((t) => t.paidBy === "joint").reduce((s, t) => s + t.amount, 0);
   const groupedTxns = groupByDay(filtered, today);
 
   return (
@@ -95,6 +102,7 @@ export default function TransactionsList() {
         <SummaryItem label="Total spent" value={totalSpent} />
         <SummaryItem label="Paid by Daniel" value={paidDaniel} colorClass="text-daniel" />
         <SummaryItem label="Paid by Adel" value={paidAdel} colorClass="text-adel" />
+        <SummaryItem label="Joint account" value={paidJoint} colorClass="text-gold" />
       </div>
 
       <div className="px-5">
@@ -147,7 +155,7 @@ function SummaryItem({
 
 function TxnRow({ txn }: { txn: Transaction }) {
   const category = categoryOf(txn.categoryId);
-  const isDaniel = txn.paidBy === "daniel";
+  const badgeLetter = { daniel: "D", adel: "A", joint: "J" }[txn.paidBy];
 
   return (
     <div className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-3 last:border-b-0">
@@ -159,9 +167,9 @@ function TxnRow({ txn }: { txn: Transaction }) {
         <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-gray">
           <span
             className="flex h-[13px] w-[13px] items-center justify-center rounded-full text-[7px] font-semibold text-white"
-            style={{ background: isDaniel ? "#0F6E56" : "#B4637A" }}
+            style={{ background: PERSON_BADGE[txn.paidBy] }}
           >
-            {isDaniel ? "D" : "A"}
+            {badgeLetter}
           </span>
           {PERSON_LABEL[txn.paidBy]} · {category.isPersonal ? "Personal" : category.name}
         </div>

@@ -1,6 +1,6 @@
 // Mock transactions/budgets/goals until Supabase is wired up (needs Auth first).
 
-export type Person = "daniel" | "adel";
+export type Person = "daniel" | "adel" | "joint";
 
 export type Transaction = {
   id: string;
@@ -22,6 +22,7 @@ export const transactions: Transaction[] = [
   { id: "t6", categoryId: "transport", amount: 1650000, paidBy: "adel", splitDaniel: 70, splitAdel: 30, note: "Car service", date: "2026-07-03" },
   { id: "t7", categoryId: "dining", amount: 650000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Dinner — Plataran", date: "2026-07-09" },
   { id: "t8", categoryId: "skincare", amount: 550000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Skincare restock", date: "2026-07-09" },
+  { id: "t9", categoryId: "groceries", amount: 900000, paidBy: "joint", splitDaniel: 50, splitAdel: 50, note: "Groceries — joint account", date: "2026-07-08" },
 ];
 
 export type Budget = {
@@ -36,6 +37,21 @@ export const budgets: Budget[] = [
   { categoryId: "wedding", monthLimit: 5000000 },
   { categoryId: "gym", monthLimit: 500000 },
   { categoryId: "skincare", monthLimit: 1000000 },
+];
+
+// Deposits into the shared joint savings account. Balance = contributions
+// minus joint-paid transactions (see lib/joint.ts).
+export type JointContribution = {
+  id: string;
+  contributor: "daniel" | "adel";
+  amount: number;
+  note: string;
+  date: string; // ISO date
+};
+
+export const jointContributions: JointContribution[] = [
+  { id: "jc1", contributor: "daniel", amount: 5_000_000, note: "Monthly top-up", date: "2026-07-01" },
+  { id: "jc2", contributor: "adel", amount: 5_000_000, note: "Monthly top-up", date: "2026-07-01" },
 ];
 
 export type Goal = {

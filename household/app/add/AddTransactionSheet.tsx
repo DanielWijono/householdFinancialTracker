@@ -3,7 +3,13 @@
 import { useMemo, useState } from "react";
 import { categories } from "../../lib/categories";
 
-type Person = "daniel" | "adel";
+type Person = "daniel" | "adel" | "joint";
+
+const PAID_BY_META: Record<Person, { label: string; letter: string; color: string }> = {
+  daniel: { label: "Daniel", letter: "D", color: "#0F6E56" },
+  adel: { label: "Adel", letter: "A", color: "#B4637A" },
+  joint: { label: "Joint Account", letter: "J", color: "#C9A227" },
+};
 
 const SPLIT_STEP = 5;
 
@@ -92,67 +98,77 @@ export default function AddTransactionSheet() {
           })}
         </div>
 
-        <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
-          Split
-        </div>
-        <div className="rounded-card border-[0.5px] border-gray-line bg-card p-4">
-          <div className="mb-3 flex items-baseline justify-between">
-            <span className="text-[13px] font-medium text-ink">{category.name} split</span>
-            <span className="font-mono text-[12.5px]">
-              <span className="font-semibold text-daniel">Daniel {splitDaniel}%</span>
-              {" · "}
-              <span className="font-semibold text-adel">Adel {splitAdel}%</span>
-            </span>
-          </div>
+        {paidBy !== "joint" && (
+          <>
+            <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
+              Split
+            </div>
+            <div className="rounded-card border-[0.5px] border-gray-line bg-card p-4">
+              <div className="mb-3 flex items-baseline justify-between">
+                <span className="text-[13px] font-medium text-ink">{category.name} split</span>
+                <span className="font-mono text-[12.5px]">
+                  <span className="font-semibold text-daniel">Daniel {splitDaniel}%</span>
+                  {" · "}
+                  <span className="font-semibold text-adel">Adel {splitAdel}%</span>
+                </span>
+              </div>
 
-          <div className="relative flex h-[18px] items-center">
-            <div
-              className="pointer-events-none absolute inset-x-0 h-2.5 overflow-hidden rounded-full"
-              style={{
-                background: `linear-gradient(to right, #0F6E56 0%, #0F6E56 ${splitDaniel}%, #B4637A ${splitDaniel}%, #B4637A 100%)`,
-              }}
-            />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={SPLIT_STEP}
-              value={splitDaniel}
-              onChange={(e) => setSplitDaniel(Number(e.target.value))}
-              className="relative w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-ink [&::-moz-range-thumb]:bg-white [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-ink [&::-webkit-slider-thumb]:bg-white"
-              aria-label="Daniel split percentage"
-            />
-          </div>
-          <p className="mt-2 text-[11px] text-gray">Drag to override for this transaction only</p>
-        </div>
+              <div className="relative flex h-[18px] items-center">
+                <div
+                  className="pointer-events-none absolute inset-x-0 h-2.5 overflow-hidden rounded-full"
+                  style={{
+                    background: `linear-gradient(to right, #0F6E56 0%, #0F6E56 ${splitDaniel}%, #B4637A ${splitDaniel}%, #B4637A 100%)`,
+                  }}
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={SPLIT_STEP}
+                  value={splitDaniel}
+                  onChange={(e) => setSplitDaniel(Number(e.target.value))}
+                  className="relative w-full cursor-pointer appearance-none bg-transparent [&::-moz-range-thumb]:h-[18px] [&::-moz-range-thumb]:w-[18px] [&::-moz-range-thumb]:cursor-pointer [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-ink [&::-moz-range-thumb]:bg-white [&::-webkit-slider-thumb]:h-[18px] [&::-webkit-slider-thumb]:w-[18px] [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-ink [&::-webkit-slider-thumb]:bg-white"
+                  aria-label="Daniel split percentage"
+                />
+              </div>
+              <p className="mt-2 text-[11px] text-gray">Drag to override for this transaction only</p>
+            </div>
+          </>
+        )}
 
         <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
           Paid by
         </div>
-        <div className="flex gap-2.5">
-          {(["daniel", "adel"] as Person[]).map((p) => {
+        <div className="flex gap-2">
+          {(["daniel", "adel", "joint"] as Person[]).map((p) => {
             const active = paidBy === p;
-            const isDaniel = p === "daniel";
+            const meta = PAID_BY_META[p];
             return (
               <button
                 key={p}
                 type="button"
                 onClick={() => setPaidBy(p)}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-[12px] border bg-card px-3 py-3 text-[13px] font-medium ${
+                className={`flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[12px] border bg-card px-2 py-3 text-[12px] font-medium ${
                   active ? "border-[1.5px] border-ink" : "border-[0.5px] border-gray-line"
                 }`}
               >
                 <span
                   className="flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-semibold text-white"
-                  style={{ background: isDaniel ? "#0F6E56" : "#B4637A" }}
+                  style={{ background: meta.color }}
                 >
-                  {isDaniel ? "D" : "A"}
+                  {meta.letter}
                 </span>
-                {isDaniel ? "Daniel" : "Adel"}
+                {meta.label}
               </button>
             );
           })}
         </div>
+        {paidBy === "joint" && (
+          <p className="mt-2 text-[11px] text-gray">
+            Joint-account spend is tracked against budget but excluded from settlement — you&apos;ve
+            already both contributed to the pool.
+          </p>
+        )}
 
         <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
           Note

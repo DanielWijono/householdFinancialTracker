@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { categories } from "../lib/categories";
-import { transactions, budgets, goals } from "../lib/mock-data";
+import { transactions, budgets, goals, jointContributions } from "../lib/mock-data";
 import { computeSettlement, formatIDR } from "../lib/settlement";
+import { computeJointBalance } from "../lib/joint";
+import SignOutButton from "./SignOutButton";
 
-const PERSON_LABEL = { daniel: "Daniel", adel: "Adel" } as const;
+const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
 
 function categoryOf(id: string) {
   return categories.find((c) => c.id === id)!;
@@ -24,17 +26,22 @@ function dayLabel(iso: string) {
 
 export default function Dashboard() {
   const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+  const totalJoint = transactions
+    .filter((t) => t.paidBy === "joint")
+    .reduce((sum, t) => sum + t.amount, 0);
   const totalBudget = budgets.reduce((sum, b) => sum + b.monthLimit, 0);
   const pctOfBudget = Math.round((totalSpent / totalBudget) * 100);
   const settlement = computeSettlement(transactions);
+  const jointBalance = computeJointBalance(jointContributions, transactions);
 
   const groupedTxns = groupByDay(transactions);
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-24">
       <header className="px-6 pb-6 pt-8">
-        <div className="mb-1.5 text-[13px] font-medium uppercase tracking-wider text-gray">
+        <div className="mb-1.5 flex items-center justify-between text-[13px] font-medium uppercase tracking-wider text-gray">
           {monthLabel(new Date("2026-07-13"))}
+          <SignOutButton />
         </div>
         <div className="mb-1 font-display text-[22px] font-medium text-ink">Total spent</div>
         <div className="font-mono text-[42px] font-semibold tracking-tight text-ink">
@@ -43,9 +50,16 @@ export default function Dashboard() {
         <div className="mt-1.5 font-mono text-[13px] text-gray">
           of {formatIDR(totalBudget)} budgeted · {pctOfBudget}%
         </div>
+        {totalJoint > 0 && (
+          <div className="mt-1 font-mono text-[12px] text-gold">
+            {formatIDR(totalJoint)} paid from joint account
+          </div>
+        )}
       </header>
 
       <SettlementCard owedBy={settlement.owedBy} amount={settlement.amount} />
+
+      <JointSavingsCard balance={jointBalance} />
 
       <section className="px-5 pt-2">
         <div className="mb-3 mt-5 flex items-center justify-between font-display text-[17px] font-medium text-ink">
@@ -136,6 +150,26 @@ function SettlementCard({
         </div>
       </div>
       <div className="font-mono text-lg font-semibold text-[#5A2E19]">{formatIDR(amount)}</div>
+    </div>
+  );
+}
+
+function JointSavingsCard({ balance }: { balance: ReturnType<typeof computeJointBalance> }) {
+  const { balance: bal, contributedDaniel, contributedAdel, spent } = balance;
+
+  return (
+    <div className="mx-5 mb-5 rounded-card border-[0.5px] border-gray-line bg-gold-bg px-5 py-4.5">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-ink">Joint savings</span>
+        <span className="font-mono text-lg font-semibold text-ink">{formatIDR(bal)}</span>
+      </div>
+      <div className="mt-2 flex items-center justify-between font-mono text-[11.5px] text-gray">
+        <span>
+          <span className="text-daniel">D</span> {formatIDR(contributedDaniel)} +{" "}
+          <span className="text-adel">A</span> {formatIDR(contributedAdel)} in
+        </span>
+        <span>{formatIDR(spent)} spent</span>
+      </div>
     </div>
   );
 }

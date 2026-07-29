@@ -11,12 +11,16 @@ export type Settlement = {
  * splitAdel is derived as (amount - danielShare) rather than its own round()
  * so the two shares always sum exactly to the transaction amount — no
  * rupiah lost or gained to independent rounding.
+ *
+ * Joint-account transactions are excluded entirely: both paid the pool via
+ * prior contributions, so there's nothing left to settle between them.
  */
 export function computeSettlement(txns: Transaction[]): Settlement {
   let danielPaid = 0;
   let danielFairShare = 0;
 
   for (const t of txns) {
+    if (t.paidBy === "joint") continue;
     if (t.paidBy === "daniel") danielPaid += t.amount;
     danielFairShare += Math.round((t.amount * t.splitDaniel) / 100);
   }
