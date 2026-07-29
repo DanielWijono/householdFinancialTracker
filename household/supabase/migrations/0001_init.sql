@@ -26,7 +26,9 @@ create table transactions (
   category_id uuid not null references categories (id) on delete restrict,
   amount numeric(12, 2) not null check (amount > 0),
   currency text not null default 'IDR',
-  paid_by uuid not null references household_users (id),
+  -- 'joint' means paid from the shared joint savings account, not by either
+  -- person directly — excluded from settlement math (see lib/settlement.ts).
+  paid_by text not null check (paid_by in ('daniel', 'adel', 'joint')),
   split_daniel smallint not null check (split_daniel between 0 and 100),
   split_adel smallint not null check (split_adel between 0 and 100),
   note text,
@@ -82,29 +84,45 @@ alter table budgets enable row level security;
 alter table goals enable row level security;
 alter table goal_contributions enable row level security;
 
+-- A policy on household_users can't query household_users directly in its
+-- own USING clause — Postgres re-evaluates RLS on that inner query too,
+-- which recurses forever. Route the membership check through a
+-- SECURITY DEFINER function instead: it runs as the function owner
+-- (bypassrls in Supabase), so the inner lookup skips RLS entirely.
+create or replace function public.is_household_member()
+returns boolean
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select exists (select 1 from household_users where id = auth.uid());
+$$;
+
 create policy "household members only" on household_users
-  for select using (auth.uid() in (select id from household_users));
+  for select using (public.is_household_member());
 
 create policy "household members only" on categories
-  for all using (auth.uid() in (select id from household_users))
-  with check (auth.uid() in (select id from household_users));
+  for all using (public.is_household_member())
+  with check (public.is_household_member());
 
 create policy "household members only" on transactions
-  for all using (auth.uid() in (select id from household_users))
-  with check (auth.uid() in (select id from household_users));
+  for all using (public.is_household_member())
+  with check (public.is_household_member());
 
 create policy "household members only" on budgets
-  for all using (auth.uid() in (select id from household_users))
-  with check (auth.uid() in (select id from household_users));
+  for all using (public.is_household_member())
+  with check (public.is_household_member());
 
 create policy "household members only" on goals
-  for all using (auth.uid() in (select id from household_users))
-  with check (auth.uid() in (select id from household_users));
+  for all using (public.is_household_member())
+  with check (public.is_household_member());
 
 create policy "household members only" on goal_contributions
-  for all using (auth.uid() in (select id from household_users))
-  with check (auth.uid() in (select id from household_users));
+  for all using (public.is_household_member())
+  with check (public.is_household_member());
 
--- After Daniel & Adel each sign up once via Supabase Auth, run:
+-- After Daniel & Adel accounts are created via admin.createUser (see
+-- scratchpad create-users.mjs script), run:
 --   insert into household_users (id, name) values ('<daniel-auth-uid>', 'daniel');
 --   insert into household_users (id, name) values ('<adel-auth-uid>', 'adel');
