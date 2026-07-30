@@ -11,7 +11,7 @@ const PERSON_BADGE: Record<keyof typeof PERSON_LABEL, string> = {
   joint: "#C9A227",
 };
 
-type Filter = "all" | "shared" | "daniel" | "adel" | "joint" | "wedding";
+type Filter = "all" | "shared" | "daniel" | "adel" | "joint";
 
 const FILTERS: { id: Filter; label: string }[] = [
   { id: "all", label: "All" },
@@ -19,7 +19,6 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "daniel", label: "Daniel" },
   { id: "adel", label: "Adel" },
   { id: "joint", label: "Joint" },
-  { id: "wedding", label: "Wedding" },
 ];
 
 function dayLabel(iso: string, today: Date) {
@@ -35,7 +34,6 @@ function dayLabel(iso: string, today: Date) {
 
 function matchesFilter(t: Transaction, filter: Filter, categoryOf: (id: string) => Category) {
   if (filter === "all") return true;
-  if (filter === "wedding") return t.categoryId === "wedding";
   if (filter === "shared") return !categoryOf(t.categoryId).isPersonal;
   return t.paidBy === filter;
 }

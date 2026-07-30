@@ -15,7 +15,6 @@ export const categories: Category[] = [
   { id: "transport-daniel", name: "Transport Daniel", icon: "🚗", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
   { id: "transport-adel", name: "Transport Adel", icon: "🚗", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
   { id: "dining", name: "Dining", icon: "🍽️", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
-  { id: "wedding", name: "Wedding", icon: "💍", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
   { id: "gym", name: "Gym", icon: "🏋️", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
   { id: "rent", name: "Rent", icon: "🏠", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
   { id: "utilities", name: "Utilities", icon: "💡", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },

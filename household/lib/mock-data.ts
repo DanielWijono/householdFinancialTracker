@@ -15,7 +15,6 @@ export type Transaction = {
 
 export const transactions: Transaction[] = [
   { id: "t1", categoryId: "groceries", amount: 340000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Superindo — weekly groceries", date: "2026-07-13" },
-  { id: "t2", categoryId: "wedding", amount: 1500000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Vendor DP — florist", date: "2026-07-13" },
   { id: "t3", categoryId: "transport-daniel", amount: 200000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Pertamina — fuel", date: "2026-07-12" },
   { id: "t4", categoryId: "gym", amount: 450000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Gym membership", date: "2026-07-12" },
   { id: "t5", categoryId: "groceries", amount: 1760000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Monthly groceries run", date: "2026-07-05" },
@@ -35,7 +34,6 @@ export const budgets: Budget[] = [
   { categoryId: "transport-daniel", monthLimit: 1000000 },
   { categoryId: "transport-adel", monthLimit: 500000 },
   { categoryId: "utilities", monthLimit: 1500000 },
-  { categoryId: "wedding", monthLimit: 5000000 },
   { categoryId: "gym", monthLimit: 500000 },
   { categoryId: "skincare", monthLimit: 1000000 },
 ];
