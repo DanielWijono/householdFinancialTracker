@@ -7,13 +7,11 @@ import {
   formatIDR,
   type CategorySettlement,
 } from "../lib/settlement";
-import { computeJointBalance } from "../lib/joint";
 import { createClient } from "../lib/supabase/server";
 import {
   getBudgetsForMonth,
   getCategories,
   getGoals,
-  getJointContributionsForMonth,
   getTransactionsForMonth,
 } from "../lib/supabase/queries";
 import SignOutButton from "./SignOutButton";
@@ -37,11 +35,10 @@ function dayLabel(iso: string, today: Date) {
 export default async function Dashboard() {
   const today = new Date();
   const supabase = await createClient();
-  const [categories, transactions, budgets, jointContributions, goals] = await Promise.all([
+  const [categories, transactions, budgets, goals] = await Promise.all([
     getCategories(supabase),
     getTransactionsForMonth(supabase, today),
     getBudgetsForMonth(supabase, today),
-    getJointContributionsForMonth(supabase, today),
     getGoals(supabase),
   ]);
 
@@ -57,7 +54,6 @@ export default async function Dashboard() {
   const pctOfBudget = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const settlement = computeSettlement(transactions);
   const settlementByCategory = computeSettlementByCategory(transactions);
-  const jointBalance = computeJointBalance(jointContributions, transactions);
 
   const groupedTxns = groupByDay(transactions, today);
 
@@ -89,7 +85,7 @@ export default async function Dashboard() {
         categoryOf={categoryOf}
       />
 
-      <JointSavingsCard balance={jointBalance} />
+      <JointAccountSpendingCard amount={totalJoint} />
 
       <section className="px-5 pt-2">
         <div className="mb-3 mt-5 flex items-center justify-between font-display text-[17px] font-medium text-ink">
@@ -226,28 +222,15 @@ function SettlementCard({
   );
 }
 
-function JointSavingsCard({ balance }: { balance: ReturnType<typeof computeJointBalance> }) {
-  const { balance: bal, contributedDaniel, contributedAdel, spent } = balance;
-
+function JointAccountSpendingCard({ amount }: { amount: number }) {
   return (
-    <div className="mx-5 mb-5 rounded-card border-[0.5px] border-gray-line bg-gold-bg px-5 py-4.5">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-ink">Joint savings</span>
-        <div className="flex items-center gap-2.5">
-          <span className="font-mono text-lg font-semibold text-ink">{formatIDR(bal)}</span>
-          <Link href="/joint" className="text-xs font-medium text-gray">
-            + Add
-          </Link>
-        </div>
-      </div>
-      <div className="mt-2 flex items-center justify-between font-mono text-[11.5px] text-gray">
-        <span>
-          <span className="text-daniel">D</span> {formatIDR(contributedDaniel)} +{" "}
-          <span className="text-adel">A</span> {formatIDR(contributedAdel)} in
-        </span>
-        <span>{formatIDR(spent)} spent</span>
-      </div>
-    </div>
+    <Link
+      href="/joint-spending"
+      className="mx-5 mb-5 flex items-center justify-between rounded-card border-[0.5px] border-gray-line bg-gold-bg px-5 py-4.5"
+    >
+      <span className="text-sm font-medium text-ink">Joint account spending</span>
+      <span className="font-mono text-lg font-semibold text-ink">{formatIDR(amount)}</span>
+    </Link>
   );
 }
 
