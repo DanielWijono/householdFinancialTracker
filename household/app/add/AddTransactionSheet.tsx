@@ -45,6 +45,7 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
   );
   const splitAdel = 100 - splitDaniel;
   const isGroceries = category.name === "Groceries";
+  const isDonation = category.name === "Donation";
 
   function selectCategory(id: string) {
     setCategoryId(id);
@@ -52,6 +53,19 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
     setSplitDaniel(cat.defaultSplitDaniel);
     if (cat.name === "Groceries") {
       setPaidBy("joint");
+    } else if (cat.name === "Donation") {
+      setPaidBy((p) => {
+        const next = p === "joint" ? "daniel" : p;
+        setSplitDaniel(next === "daniel" ? 100 : 0);
+        return next;
+      });
+    }
+  }
+
+  function selectPaidBy(p: Person) {
+    setPaidBy(p);
+    if (isDonation) {
+      setSplitDaniel(p === "daniel" ? 100 : 0);
     }
   }
 
@@ -132,7 +146,7 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
           })}
         </div>
 
-        {paidBy !== "joint" && !isGroceries && (
+        {paidBy !== "joint" && !isGroceries && !isDonation && (
           <>
             <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
               Split
@@ -176,14 +190,14 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
         <div className="flex gap-2">
           {(["daniel", "adel", "joint"] as Person[]).map((p) => {
             const active = paidBy === p;
-            const disabled = isGroceries && p !== "joint";
+            const disabled = (isGroceries && p !== "joint") || (isDonation && p === "joint");
             const meta = PAID_BY_META[p];
             return (
               <button
                 key={p}
                 type="button"
                 disabled={disabled}
-                onClick={() => setPaidBy(p)}
+                onClick={() => selectPaidBy(p)}
                 className={`flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[12px] border bg-card px-2 py-3 text-[12px] font-medium ${
                   active ? "border-[1.5px] border-ink" : "border-[0.5px] border-gray-line"
                 } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
