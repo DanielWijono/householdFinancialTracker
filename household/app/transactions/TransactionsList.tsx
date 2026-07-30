@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { categories } from "../../lib/categories";
-import { transactions as allTransactions, type Transaction } from "../../lib/mock-data";
+import type { Category } from "../../lib/categories";
+import type { Transaction } from "../../lib/mock-data";
 
 const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
 const PERSON_BADGE: Record<keyof typeof PERSON_LABEL, string> = {
@@ -22,20 +22,18 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "wedding", label: "Wedding" },
 ];
 
-function categoryOf(id: string) {
-  return categories.find((c) => c.id === id)!;
-}
-
 function dayLabel(iso: string, today: Date) {
-  const d = new Date(iso);
-  const diffDays = Math.round((today.getTime() - d.getTime()) / 86_400_000);
+  const [y, m, day] = iso.split("-").map(Number);
+  const d = new Date(y, m - 1, day);
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffDays = Math.round((todayMidnight.getTime() - d.getTime()) / 86_400_000);
   const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   if (diffDays === 0) return `Today, ${dateStr}`;
   if (diffDays === 1) return `Yesterday, ${dateStr}`;
   return dateStr;
 }
 
-function matchesFilter(t: Transaction, filter: Filter) {
+function matchesFilter(t: Transaction, filter: Filter, categoryOf: (id: string) => Category) {
   if (filter === "all") return true;
   if (filter === "wedding") return t.categoryId === "wedding";
   if (filter === "shared") return !categoryOf(t.categoryId).isPersonal;
@@ -54,13 +52,24 @@ function groupByDay(txns: Transaction[], today: Date) {
   return Array.from(groups.entries());
 }
 
-export default function TransactionsList() {
+export default function TransactionsList({
+  categories,
+  transactions: allTransactions,
+  today,
+}: {
+  categories: Category[];
+  transactions: Transaction[];
+  today: Date;
+}) {
   const [filter, setFilter] = useState<Filter>("all");
-  const today = useMemo(() => new Date("2026-07-16"), []);
+
+  function categoryOf(id: string) {
+    return categories.find((c) => c.id === id)!;
+  }
 
   const filtered = useMemo(
-    () => allTransactions.filter((t) => matchesFilter(t, filter)),
-    [filter],
+    () => allTransactions.filter((t) => matchesFilter(t, filter, categoryOf)),
+    [filter, allTransactions, categories],
   );
 
   const totalSpent = filtered.reduce((sum, t) => sum + t.amount, 0);
@@ -68,13 +77,14 @@ export default function TransactionsList() {
   const paidAdel = filtered.filter((t) => t.paidBy === "adel").reduce((s, t) => s + t.amount, 0);
   const paidJoint = filtered.filter((t) => t.paidBy === "joint").reduce((s, t) => s + t.amount, 0);
   const groupedTxns = groupByDay(filtered, today);
+  const monthLabel = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-10">
       <header className="px-6 pb-4 pt-7">
         <div className="mb-1 font-display text-2xl font-medium text-ink">Transactions</div>
         <div className="text-[13px] text-gray">
-          July 2026 · {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+          {monthLabel} · {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
         </div>
       </header>
 
@@ -123,7 +133,7 @@ export default function TransactionsList() {
                   </span>
                 </div>
                 {txns.map((t) => (
-                  <TxnRow key={t.id} txn={t} />
+                  <TxnRow key={t.id} txn={t} category={categoryOf(t.categoryId)} />
                 ))}
               </div>
             );
@@ -153,8 +163,7 @@ function SummaryItem({
   );
 }
 
-function TxnRow({ txn }: { txn: Transaction }) {
-  const category = categoryOf(txn.categoryId);
+function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
   const badgeLetter = { daniel: "D", adel: "A", joint: "J" }[txn.paidBy];
 
   return (

@@ -1,46 +1,63 @@
 import Link from "next/link";
-import { categories } from "../lib/categories";
-import { transactions, budgets, goals, jointContributions } from "../lib/mock-data";
+import type { Category } from "../lib/categories";
+import { goals, type Budget, type Transaction } from "../lib/mock-data";
 import { computeSettlement, formatIDR } from "../lib/settlement";
 import { computeJointBalance } from "../lib/joint";
+import { createClient } from "../lib/supabase/server";
+import {
+  getBudgetsForMonth,
+  getCategories,
+  getJointContributionsForMonth,
+  getTransactionsForMonth,
+} from "../lib/supabase/queries";
 import SignOutButton from "./SignOutButton";
 
 const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
-
-function categoryOf(id: string) {
-  return categories.find((c) => c.id === id)!;
-}
 
 function monthLabel(date: Date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-function dayLabel(iso: string) {
-  const d = new Date(iso);
-  const today = new Date("2026-07-13");
-  const diffDays = Math.round((today.getTime() - d.getTime()) / 86_400_000);
+function dayLabel(iso: string, today: Date) {
+  const [y, m, day] = iso.split("-").map(Number);
+  const d = new Date(y, m - 1, day);
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const diffDays = Math.round((todayMidnight.getTime() - d.getTime()) / 86_400_000);
   if (diffDays === 0) return "Today";
   if (diffDays === 1) return "Yesterday";
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const today = new Date();
+  const supabase = await createClient();
+  const [categories, transactions, budgets, jointContributions] = await Promise.all([
+    getCategories(supabase),
+    getTransactionsForMonth(supabase, today),
+    getBudgetsForMonth(supabase, today),
+    getJointContributionsForMonth(supabase, today),
+  ]);
+
+  function categoryOf(id: string) {
+    return categories.find((c) => c.id === id)!;
+  }
+
   const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
   const totalJoint = transactions
     .filter((t) => t.paidBy === "joint")
     .reduce((sum, t) => sum + t.amount, 0);
   const totalBudget = budgets.reduce((sum, b) => sum + b.monthLimit, 0);
-  const pctOfBudget = Math.round((totalSpent / totalBudget) * 100);
+  const pctOfBudget = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const settlement = computeSettlement(transactions);
   const jointBalance = computeJointBalance(jointContributions, transactions);
 
-  const groupedTxns = groupByDay(transactions);
+  const groupedTxns = groupByDay(transactions, today);
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-24">
       <header className="px-6 pb-6 pt-8">
         <div className="mb-1.5 flex items-center justify-between text-[13px] font-medium uppercase tracking-wider text-gray">
-          {monthLabel(new Date("2026-07-13"))}
+          {monthLabel(today)}
           <SignOutButton />
         </div>
         <div className="mb-1 font-display text-[22px] font-medium text-ink">Total spent</div>
@@ -70,7 +87,14 @@ export default function Dashboard() {
         </div>
         <div className="rounded-card border-[0.5px] border-gray-line bg-card px-[18px] py-1.5">
           {budgets.map((b) => (
-            <BudgetRow key={b.categoryId} budget={b} />
+            <BudgetRow
+              key={b.categoryId}
+              budget={b}
+              category={categoryOf(b.categoryId)}
+              spent={transactions
+                .filter((t) => t.categoryId === b.categoryId)
+                .reduce((sum, t) => sum + t.amount, 0)}
+            />
           ))}
         </div>
       </section>
@@ -98,7 +122,7 @@ export default function Dashboard() {
                 {day}
               </div>
               {txns.map((t) => (
-                <TxnRow key={t.id} txn={t} />
+                <TxnRow key={t.id} txn={t} category={categoryOf(t.categoryId)} />
               ))}
             </div>
           ))}
@@ -161,7 +185,12 @@ function JointSavingsCard({ balance }: { balance: ReturnType<typeof computeJoint
     <div className="mx-5 mb-5 rounded-card border-[0.5px] border-gray-line bg-gold-bg px-5 py-4.5">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-ink">Joint savings</span>
-        <span className="font-mono text-lg font-semibold text-ink">{formatIDR(bal)}</span>
+        <div className="flex items-center gap-2.5">
+          <span className="font-mono text-lg font-semibold text-ink">{formatIDR(bal)}</span>
+          <Link href="/joint" className="text-xs font-medium text-gray">
+            + Add
+          </Link>
+        </div>
       </div>
       <div className="mt-2 flex items-center justify-between font-mono text-[11.5px] text-gray">
         <span>
@@ -174,11 +203,15 @@ function JointSavingsCard({ balance }: { balance: ReturnType<typeof computeJoint
   );
 }
 
-function BudgetRow({ budget }: { budget: (typeof budgets)[number] }) {
-  const category = categoryOf(budget.categoryId);
-  const spent = transactions
-    .filter((t) => t.categoryId === budget.categoryId)
-    .reduce((sum, t) => sum + t.amount, 0);
+function BudgetRow({
+  budget,
+  category,
+  spent,
+}: {
+  budget: Budget;
+  category: Category;
+  spent: number;
+}) {
   const pct = Math.min(100, Math.round((spent / budget.monthLimit) * 100));
   const over = spent > budget.monthLimit;
   const chipBg = category.isPersonal ? "bg-daniel-bg" : "bg-gold-bg";
@@ -253,8 +286,7 @@ function GoalCard({ goal }: { goal: (typeof goals)[number] }) {
   );
 }
 
-function TxnRow({ txn }: { txn: (typeof transactions)[number] }) {
-  const category = categoryOf(txn.categoryId);
+function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
   return (
     <div className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-[11px] last:border-b-0">
       <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-daniel-bg text-[15px]">
@@ -278,10 +310,10 @@ function TxnRow({ txn }: { txn: (typeof transactions)[number] }) {
   );
 }
 
-function groupByDay(txns: typeof transactions) {
-  const groups = new Map<string, typeof transactions>();
+function groupByDay(txns: Transaction[], today: Date) {
+  const groups = new Map<string, Transaction[]>();
   for (const t of txns) {
-    const label = dayLabel(t.date);
+    const label = dayLabel(t.date, today);
     if (!groups.has(label)) groups.set(label, []);
     groups.get(label)!.push(t);
   }

@@ -1,24 +1,35 @@
-import { categories } from "../../lib/categories";
-import { budgets, transactions } from "../../lib/mock-data";
+import Link from "next/link";
+import type { Category } from "../../lib/categories";
+import type { Budget } from "../../lib/mock-data";
 import { formatIDR } from "../../lib/settlement";
+import { createClient } from "../../lib/supabase/server";
+import { getBudgetsForMonth, getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
 
-function categoryOf(id: string) {
-  return categories.find((c) => c.id === id)!;
-}
+export default async function BudgetsPage() {
+  const today = new Date();
+  const supabase = await createClient();
+  const [categories, budgets, transactions] = await Promise.all([
+    getCategories(supabase),
+    getBudgetsForMonth(supabase, today),
+    getTransactionsForMonth(supabase, today),
+  ]);
 
-function spentFor(categoryId: string) {
-  return transactions
-    .filter((t) => t.categoryId === categoryId)
-    .reduce((sum, t) => sum + t.amount, 0);
-}
+  function categoryOf(id: string) {
+    return categories.find((c) => c.id === id)!;
+  }
 
-function jointSpentFor(categoryId: string) {
-  return transactions
-    .filter((t) => t.categoryId === categoryId && t.paidBy === "joint")
-    .reduce((sum, t) => sum + t.amount, 0);
-}
+  function spentFor(categoryId: string) {
+    return transactions
+      .filter((t) => t.categoryId === categoryId)
+      .reduce((sum, t) => sum + t.amount, 0);
+  }
 
-export default function BudgetsPage() {
+  function jointSpentFor(categoryId: string) {
+    return transactions
+      .filter((t) => t.categoryId === categoryId && t.paidBy === "joint")
+      .reduce((sum, t) => sum + t.amount, 0);
+  }
+
   const sharedBudgets = budgets.filter((b) => !categoryOf(b.categoryId).isPersonal);
   const personalBudgets = budgets.filter((b) => categoryOf(b.categoryId).isPersonal);
 
@@ -26,11 +37,13 @@ export default function BudgetsPage() {
   const totalJoint = budgets.reduce((sum, b) => sum + jointSpentFor(b.categoryId), 0);
   const totalLimit = budgets.reduce((sum, b) => sum + b.monthLimit, 0);
   const overCount = budgets.filter((b) => spentFor(b.categoryId) > b.monthLimit).length;
-  const overallPct = Math.min(1, totalSpent / totalLimit);
+  const overallPct = totalLimit > 0 ? Math.min(1, totalSpent / totalLimit) : 0;
 
   const r = 27;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - overallPct);
+
+  const monthLabel = today.toLocaleDateString("en-US", { month: "short", year: "numeric" });
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-10">
@@ -43,7 +56,7 @@ export default function BudgetsPage() {
           <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-[0.5px] border-gray-line bg-card text-[11px]">
             ‹
           </span>
-          Jul 2026
+          {monthLabel}
           <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full border-[0.5px] border-gray-line bg-card text-[11px]">
             ›
           </span>
@@ -86,33 +99,77 @@ export default function BudgetsPage() {
         </div>
       </div>
 
-      <BudgetSection title="Shared" items={sharedBudgets} />
-      <BudgetSection title="Personal" items={personalBudgets} />
+      <BudgetSection
+        title="Shared"
+        section="shared"
+        items={sharedBudgets}
+        categoryOf={categoryOf}
+        spentFor={spentFor}
+        jointSpentFor={jointSpentFor}
+      />
+      <BudgetSection
+        title="Personal"
+        section="personal"
+        items={personalBudgets}
+        categoryOf={categoryOf}
+        spentFor={spentFor}
+        jointSpentFor={jointSpentFor}
+      />
     </div>
   );
 }
 
-function BudgetSection({ title, items }: { title: string; items: typeof budgets }) {
-  if (items.length === 0) return null;
+function BudgetSection({
+  title,
+  section,
+  items,
+  categoryOf,
+  spentFor,
+  jointSpentFor,
+}: {
+  title: string;
+  section: "shared" | "personal";
+  items: Budget[];
+  categoryOf: (id: string) => Category;
+  spentFor: (id: string) => number;
+  jointSpentFor: (id: string) => number;
+}) {
   return (
     <section className="px-5">
       <div className="mb-2.5 mt-[18px] flex items-center justify-between font-display text-[16px] font-medium text-ink">
         {title}
-        <span className="font-body text-xs font-medium text-gray">+ Add category</span>
+        <Link href={`/budgets/add?section=${section}`} className="font-body text-xs font-medium text-gray">
+          + Add category
+        </Link>
       </div>
-      <div className="rounded-card border-[0.5px] border-gray-line bg-card px-[18px] py-1">
-        {items.map((b) => (
-          <BudgetRow key={b.categoryId} budget={b} />
-        ))}
-      </div>
+      {items.length > 0 && (
+        <div className="rounded-card border-[0.5px] border-gray-line bg-card px-[18px] py-1">
+          {items.map((b) => (
+            <BudgetRow
+              key={b.categoryId}
+              budget={b}
+              category={categoryOf(b.categoryId)}
+              spent={spentFor(b.categoryId)}
+              joint={jointSpentFor(b.categoryId)}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
-function BudgetRow({ budget }: { budget: (typeof budgets)[number] }) {
-  const category = categoryOf(budget.categoryId);
-  const spent = spentFor(budget.categoryId);
-  const joint = jointSpentFor(budget.categoryId);
+function BudgetRow({
+  budget,
+  category,
+  spent,
+  joint,
+}: {
+  budget: Budget;
+  category: Category;
+  spent: number;
+  joint: number;
+}) {
   const pct = Math.round((spent / budget.monthLimit) * 100);
   const over = spent > budget.monthLimit;
   const barPct = Math.min(100, pct);

@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { categories } from "../../lib/categories";
+import { useRouter } from "next/navigation";
+import type { Category } from "../../lib/categories";
+import { createClient } from "../../lib/supabase/client";
 
 type Person = "daniel" | "adel" | "joint";
 
@@ -18,12 +20,22 @@ function formatAmount(raw: string) {
   return new Intl.NumberFormat("id-ID").format(Number(raw));
 }
 
-export default function AddTransactionSheet() {
+function todayISO() {
+  const d = new Date();
+  const tzOffsetMs = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+}
+
+export default function AddTransactionSheet({ categories }: { categories: Category[] }) {
+  const router = useRouter();
   const [amount, setAmount] = useState(""); // raw digits, e.g. "125000"
   const [categoryId, setCategoryId] = useState(categories[0].id);
   const [splitDaniel, setSplitDaniel] = useState(categories[0].defaultSplitDaniel);
   const [paidBy, setPaidBy] = useState<Person>("daniel");
   const [note, setNote] = useState("");
+  const [date, setDate] = useState(todayISO());
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const category = useMemo(
     () => categories.find((c) => c.id === categoryId)!,
@@ -45,18 +57,34 @@ export default function AddTransactionSheet() {
     setAmount((a) => (a + key).slice(0, 12));
   }
 
-  function handleSave() {
-    const payload = {
-      categoryId,
-      amount: Number(amount || "0"),
-      splitDaniel,
-      splitAdel,
-      paidBy,
-      note,
-      date: new Date().toISOString(),
-    };
-    // Supabase insert wiring pending — log for now.
-    console.log("save transaction", payload);
+  async function handleSave() {
+    setError("");
+    const amountValue = Number(amount || "0");
+    if (amountValue <= 0) {
+      setError("Enter an amount first.");
+      return;
+    }
+
+    setSaving(true);
+    const supabase = createClient();
+    const { error: insertError } = await supabase.from("transactions").insert({
+      category_id: categoryId,
+      amount: amountValue,
+      paid_by: paidBy,
+      split_daniel: splitDaniel,
+      split_adel: splitAdel,
+      note: note || null,
+      date,
+    });
+    setSaving(false);
+
+    if (insertError) {
+      setError(insertError.message);
+      return;
+    }
+
+    router.push("/");
+    router.refresh();
   }
 
   return (
@@ -171,6 +199,17 @@ export default function AddTransactionSheet() {
         )}
 
         <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
+          Date
+        </div>
+        <input
+          type="date"
+          value={date}
+          max={todayISO()}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full rounded-[12px] border-[0.5px] border-gray-line bg-card px-3.5 py-3 text-[13.5px] text-ink outline-none"
+        />
+
+        <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
           Note
         </div>
         <input
@@ -183,10 +222,12 @@ export default function AddTransactionSheet() {
         <button
           type="button"
           onClick={handleSave}
-          className="mt-[22px] w-full rounded-[14px] bg-ink py-4 text-[14.5px] font-medium tracking-wide text-ivory"
+          disabled={saving}
+          className="mt-[22px] w-full rounded-[14px] bg-ink py-4 text-[14.5px] font-medium tracking-wide text-ivory disabled:opacity-60"
         >
-          Save transaction
+          {saving ? "Saving…" : "Save transaction"}
         </button>
+        {error && <p className="mt-2.5 text-center text-[12.5px] text-terracotta">{error}</p>}
       </div>
     </div>
   );
