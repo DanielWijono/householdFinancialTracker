@@ -191,7 +191,10 @@ function BudgetRow({
     : category.name;
 
   return (
-    <div className="border-b-[0.5px] border-gray-line py-4 last:border-b-0">
+    <Link
+      href={`/budgets/edit/${category.id}`}
+      className="block border-b-[0.5px] border-gray-line py-4 last:border-b-0"
+    >
       <div className="mb-2.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5 text-sm font-medium">
           <span className="flex h-[28px] w-[28px] items-center justify-center rounded-[9px] bg-daniel-bg text-[14px]">
@@ -226,6 +229,6 @@ function BudgetRow({
           {new Intl.NumberFormat("id-ID").format(joint)} from joint account
         </div>
       )}
-    </div>
+    </Link>
   );
 }
