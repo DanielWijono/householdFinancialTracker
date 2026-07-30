@@ -18,6 +18,8 @@ export const categories: Category[] = [
   { id: "gym", name: "Gym", icon: "🏋️", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
   { id: "rent", name: "Rent", icon: "🏠", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
   { id: "utilities", name: "Utilities", icon: "💡", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
+  { id: "internet", name: "Internet", icon: "🌐", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
+  { id: "laundry", name: "Laundry", icon: "🧺", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
   { id: "skincare", name: "Skincare", icon: "💄", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
   { id: "donation-daniel", name: "Donation Daniel", icon: "🎗️", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
   { id: "donation-adel", name: "Donation Adel", icon: "🎗️", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
