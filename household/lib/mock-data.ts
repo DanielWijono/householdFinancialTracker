@@ -16,10 +16,10 @@ export type Transaction = {
 export const transactions: Transaction[] = [
   { id: "t1", categoryId: "groceries", amount: 340000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Superindo — weekly groceries", date: "2026-07-13" },
   { id: "t2", categoryId: "wedding", amount: 1500000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Vendor DP — florist", date: "2026-07-13" },
-  { id: "t3", categoryId: "transport", amount: 200000, paidBy: "daniel", splitDaniel: 70, splitAdel: 30, note: "Pertamina — fuel", date: "2026-07-12" },
+  { id: "t3", categoryId: "transport-daniel", amount: 200000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Pertamina — fuel", date: "2026-07-12" },
   { id: "t4", categoryId: "gym", amount: 450000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Gym membership", date: "2026-07-12" },
   { id: "t5", categoryId: "groceries", amount: 1760000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Monthly groceries run", date: "2026-07-05" },
-  { id: "t6", categoryId: "transport", amount: 1650000, paidBy: "adel", splitDaniel: 70, splitAdel: 30, note: "Car service", date: "2026-07-03" },
+  { id: "t6", categoryId: "transport-adel", amount: 1650000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Car service", date: "2026-07-03" },
   { id: "t7", categoryId: "dining", amount: 650000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Dinner — Plataran", date: "2026-07-09" },
   { id: "t8", categoryId: "skincare", amount: 550000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Skincare restock", date: "2026-07-09" },
   { id: "t9", categoryId: "groceries", amount: 900000, paidBy: "joint", splitDaniel: 50, splitAdel: 50, note: "Groceries — joint account", date: "2026-07-08" },
@@ -32,7 +32,8 @@ export type Budget = {
 
 export const budgets: Budget[] = [
   { categoryId: "groceries", monthLimit: 2500000 },
-  { categoryId: "transport", monthLimit: 1500000 },
+  { categoryId: "transport-daniel", monthLimit: 1000000 },
+  { categoryId: "transport-adel", monthLimit: 500000 },
   { categoryId: "utilities", monthLimit: 1500000 },
   { categoryId: "wedding", monthLimit: 5000000 },
   { categoryId: "gym", monthLimit: 500000 },

@@ -12,7 +12,8 @@ export type Category = {
 
 export const categories: Category[] = [
   { id: "groceries", name: "Groceries", icon: "🛒", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
-  { id: "transport", name: "Transport", icon: "🚗", defaultSplitDaniel: 70, defaultSplitAdel: 30, isPersonal: false },
+  { id: "transport-daniel", name: "Transport Daniel", icon: "🚗", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
+  { id: "transport-adel", name: "Transport Adel", icon: "🚗", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
   { id: "dining", name: "Dining", icon: "🍽️", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
   { id: "wedding", name: "Wedding", icon: "💍", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
   { id: "gym", name: "Gym", icon: "🏋️", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },

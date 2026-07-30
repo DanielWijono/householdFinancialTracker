@@ -31,7 +31,9 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
   const [amount, setAmount] = useState(""); // raw digits, e.g. "125000"
   const [categoryId, setCategoryId] = useState(categories[0].id);
   const [splitDaniel, setSplitDaniel] = useState(categories[0].defaultSplitDaniel);
-  const [paidBy, setPaidBy] = useState<Person>("daniel");
+  const [paidBy, setPaidBy] = useState<Person>(
+    categories[0].name === "Groceries" ? "joint" : "daniel",
+  );
   const [note, setNote] = useState("");
   const [date, setDate] = useState(todayISO());
   const [saving, setSaving] = useState(false);
@@ -42,11 +44,15 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
     [categoryId],
   );
   const splitAdel = 100 - splitDaniel;
+  const isGroceries = category.name === "Groceries";
 
   function selectCategory(id: string) {
     setCategoryId(id);
     const cat = categories.find((c) => c.id === id)!;
     setSplitDaniel(cat.defaultSplitDaniel);
+    if (cat.name === "Groceries") {
+      setPaidBy("joint");
+    }
   }
 
   function handleKeypad(key: string) {
@@ -126,7 +132,7 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
           })}
         </div>
 
-        {paidBy !== "joint" && (
+        {paidBy !== "joint" && !isGroceries && (
           <>
             <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
               Split
@@ -170,15 +176,17 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
         <div className="flex gap-2">
           {(["daniel", "adel", "joint"] as Person[]).map((p) => {
             const active = paidBy === p;
+            const disabled = isGroceries && p !== "joint";
             const meta = PAID_BY_META[p];
             return (
               <button
                 key={p}
                 type="button"
+                disabled={disabled}
                 onClick={() => setPaidBy(p)}
                 className={`flex flex-1 flex-col items-center justify-center gap-1.5 rounded-[12px] border bg-card px-2 py-3 text-[12px] font-medium ${
                   active ? "border-[1.5px] border-ink" : "border-[0.5px] border-gray-line"
-                }`}
+                } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
               >
                 <span
                   className="flex h-[18px] w-[18px] items-center justify-center rounded-full text-[9px] font-semibold text-white"
