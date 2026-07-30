@@ -59,7 +59,7 @@ export type Goal = {
   name: string;
   targetAmount: number;
   currentAmount: number;
-  targetDate: string; // ISO date, projected
+  targetDate: string | null; // ISO date, projected
 };
 
 export const goals: Goal[] = [

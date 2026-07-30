@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Category } from "../lib/categories";
-import { goals, type Budget, type Transaction } from "../lib/mock-data";
+import type { Budget, Goal, Transaction } from "../lib/mock-data";
 import { computeSettlement, formatIDR } from "../lib/settlement";
 import { computeJointBalance } from "../lib/joint";
 import { createClient } from "../lib/supabase/server";
 import {
   getBudgetsForMonth,
   getCategories,
+  getGoals,
   getJointContributionsForMonth,
   getTransactionsForMonth,
 } from "../lib/supabase/queries";
@@ -31,11 +32,12 @@ function dayLabel(iso: string, today: Date) {
 export default async function Dashboard() {
   const today = new Date();
   const supabase = await createClient();
-  const [categories, transactions, budgets, jointContributions] = await Promise.all([
+  const [categories, transactions, budgets, jointContributions, goals] = await Promise.all([
     getCategories(supabase),
     getTransactionsForMonth(supabase, today),
     getBudgetsForMonth(supabase, today),
     getJointContributionsForMonth(supabase, today),
+    getGoals(supabase),
   ]);
 
   function categoryOf(id: string) {
@@ -100,11 +102,22 @@ export default async function Dashboard() {
       </section>
 
       <section className="px-5 pt-2">
-        <div className="mb-3 mt-5 font-display text-[17px] font-medium text-ink">Goals</div>
+        <div className="mb-3 mt-5 flex items-center justify-between font-display text-[17px] font-medium text-ink">
+          Goals
+          <Link href="/goals" className="font-body text-xs font-medium text-gray">
+            View all
+          </Link>
+        </div>
         <div className="flex gap-3 overflow-x-auto pb-1">
           {goals.map((g) => (
             <GoalCard key={g.id} goal={g} />
           ))}
+          <Link
+            href="/goals/new"
+            className="flex w-[150px] shrink-0 flex-col items-center justify-center gap-1.5 rounded-card border-[0.5px] border-dashed border-gray-line bg-card p-4 text-[12.5px] font-medium text-gray"
+          >
+            + New goal
+          </Link>
         </div>
       </section>
 
@@ -250,18 +263,20 @@ function BudgetRow({
   );
 }
 
-function GoalCard({ goal }: { goal: (typeof goals)[number] }) {
+function GoalCard({ goal }: { goal: Goal }) {
   const pct = Math.min(1, goal.currentAmount / goal.targetAmount);
   const r = 22;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - pct);
-  const dateLabel = new Date(goal.targetDate).toLocaleDateString("en-US", {
-    month: "short",
-    year: "numeric",
-  });
+  const dateLabel = goal.targetDate
+    ? new Date(goal.targetDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+    : "no date";
 
   return (
-    <div className="w-[150px] shrink-0 rounded-card border-[0.5px] border-gray-line bg-card p-4">
+    <Link
+      href={`/goals/${goal.id}/contribute`}
+      className="block w-[150px] shrink-0 rounded-card border-[0.5px] border-gray-line bg-card p-4"
+    >
       <svg className="mb-2.5 h-[52px] w-[52px]" viewBox="0 0 52 52">
         <circle cx="26" cy="26" r={r} fill="none" stroke="#E2DDCF" strokeWidth="5" />
         <circle
@@ -282,7 +297,7 @@ function GoalCard({ goal }: { goal: (typeof goals)[number] }) {
         {formatCompact(goal.currentAmount)} / {formatCompact(goal.targetAmount)}
       </div>
       <div className="mt-1.5 font-mono text-[11px] font-medium text-gold">~{dateLabel}</div>
-    </div>
+    </Link>
   );
 }
 

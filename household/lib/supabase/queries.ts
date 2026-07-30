@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Category } from "../categories";
-import type { Budget, JointContribution, Transaction } from "../mock-data";
+import type { Budget, Goal, JointContribution, Transaction } from "../mock-data";
 
 function monthRange(monthStart: Date) {
   const start = new Date(Date.UTC(monthStart.getFullYear(), monthStart.getMonth(), 1));
@@ -64,6 +64,22 @@ export async function getBudgetsForMonth(
   return data.map((b) => ({
     categoryId: b.category_id,
     monthLimit: Number(b.amount_limit),
+  }));
+}
+
+export async function getGoals(supabase: SupabaseClient): Promise<Goal[]> {
+  const { data, error } = await supabase
+    .from("goals")
+    .select("id, name, target_amount, current_amount, target_date")
+    .order("created_at");
+  if (error) throw error;
+
+  return data.map((g) => ({
+    id: g.id,
+    name: g.name,
+    targetAmount: Number(g.target_amount),
+    currentAmount: Number(g.current_amount),
+    targetDate: g.target_date,
   }));
 }
 
