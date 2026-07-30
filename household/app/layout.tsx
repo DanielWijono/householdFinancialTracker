@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { fraunces, jetbrainsMono, generalSans } from "../lib/fonts";
 import "./globals.css";
+import NavBar from "./NavBar";
 
 export const metadata: Metadata = {
   title: "Rumah — Household Ledger",
@@ -18,6 +19,7 @@ export default function RootLayout({
       className={`${fraunces.variable} ${jetbrainsMono.variable} ${generalSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-ivory text-ink font-body">
+        <NavBar />
         {children}
       </body>
     </html>
