@@ -50,6 +50,30 @@ export async function getTransactionsForMonth(
   }));
 }
 
+export async function getTransactionById(
+  supabase: SupabaseClient,
+  id: string,
+): Promise<Transaction | null> {
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("id, category_id, amount, paid_by, split_daniel, split_adel, note, date")
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+
+  return {
+    id: data.id,
+    categoryId: data.category_id,
+    amount: Number(data.amount),
+    paidBy: data.paid_by,
+    splitDaniel: data.split_daniel,
+    splitAdel: data.split_adel,
+    note: data.note ?? "",
+    date: data.date,
+  };
+}
+
 export async function getBudgetsForMonth(
   supabase: SupabaseClient,
   monthStart: Date,

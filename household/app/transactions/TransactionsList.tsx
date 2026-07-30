@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { Category } from "../../lib/categories";
 import type { Transaction } from "../../lib/mock-data";
 
@@ -165,7 +166,10 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
   const badgeLetter = { daniel: "D", adel: "A", joint: "J" }[txn.paidBy];
 
   return (
-    <div className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-3 last:border-b-0">
+    <Link
+      href={`/transactions/edit/${txn.id}`}
+      className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-3 last:border-b-0"
+    >
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px] bg-daniel-bg text-base">
         {category.icon}
       </div>
@@ -194,6 +198,6 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

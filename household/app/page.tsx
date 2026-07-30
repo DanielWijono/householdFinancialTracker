@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { Category } from "../lib/categories";
 import type { Budget, Goal, Transaction } from "../lib/mock-data";
-import { computeSettlement, formatIDR } from "../lib/settlement";
+import {
+  computeSettlement,
+  computeSettlementByCategory,
+  formatIDR,
+  type CategorySettlement,
+} from "../lib/settlement";
 import { computeJointBalance } from "../lib/joint";
 import { createClient } from "../lib/supabase/server";
 import {
@@ -51,6 +56,7 @@ export default async function Dashboard() {
   const totalBudget = budgets.reduce((sum, b) => sum + b.monthLimit, 0);
   const pctOfBudget = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const settlement = computeSettlement(transactions);
+  const settlementByCategory = computeSettlementByCategory(transactions);
   const jointBalance = computeJointBalance(jointContributions, transactions);
 
   const groupedTxns = groupByDay(transactions, today);
@@ -76,7 +82,12 @@ export default async function Dashboard() {
         )}
       </header>
 
-      <SettlementCard owedBy={settlement.owedBy} amount={settlement.amount} />
+      <SettlementCard
+        owedBy={settlement.owedBy}
+        amount={settlement.amount}
+        byCategory={settlementByCategory}
+        categoryOf={categoryOf}
+      />
 
       <JointSavingsCard balance={jointBalance} />
 
@@ -155,9 +166,13 @@ export default async function Dashboard() {
 function SettlementCard({
   owedBy,
   amount,
+  byCategory,
+  categoryOf,
 }: {
   owedBy: "daniel" | "adel" | null;
   amount: number;
+  byCategory: CategorySettlement[];
+  categoryOf: (id: string) => Category;
 }) {
   if (!owedBy) {
     return (
@@ -170,24 +185,44 @@ function SettlementCard({
   const owedTo = owedBy === "daniel" ? "Adel" : "Daniel";
 
   return (
-    <div className="mx-5 mb-5 flex items-center justify-between rounded-card border-[0.5px] border-[#D9AF95] bg-terracotta-bg px-5 py-4.5">
-      <div className="flex items-center gap-3">
-        <div className="flex">
-          <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-daniel text-[10px] font-semibold text-white">
-            D
-          </span>
-          <span className="-ml-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-terracotta-bg bg-adel text-[10px] font-semibold text-white">
-            A
-          </span>
+    <details className="group mx-5 mb-5 rounded-card border-[0.5px] border-[#D9AF95] bg-terracotta-bg px-5 py-4.5">
+      <summary className="flex cursor-pointer list-none items-center justify-between [&::-webkit-details-marker]:hidden">
+        <div className="flex items-center gap-3">
+          <div className="flex">
+            <span className="flex h-[22px] w-[22px] items-center justify-center rounded-full bg-daniel text-[10px] font-semibold text-white">
+              D
+            </span>
+            <span className="-ml-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-terracotta-bg bg-adel text-[10px] font-semibold text-white">
+              A
+            </span>
+          </div>
+          <div className="text-sm leading-snug text-[#5A2E19]">
+            {PERSON_LABEL[owedBy]} owes
+            <br />
+            <b className="font-semibold">{owedTo}</b> this month
+          </div>
         </div>
-        <div className="text-sm leading-snug text-[#5A2E19]">
-          {PERSON_LABEL[owedBy]} owes
-          <br />
-          <b className="font-semibold">{owedTo}</b> this month
-        </div>
+        <div className="font-mono text-lg font-semibold text-[#5A2E19]">{formatIDR(amount)}</div>
+      </summary>
+      <div className="mt-3.5 border-t-[0.5px] border-[#D9AF95] pt-3">
+        {byCategory.map((c) => {
+          const category = categoryOf(c.categoryId);
+          const owedToLabel = c.owedBy === "daniel" ? "Adel" : "Daniel";
+          return (
+            <div
+              key={c.categoryId}
+              className="flex items-center justify-between py-1 text-[12.5px] text-[#5A2E19]"
+            >
+              <span>
+                {category.icon} {category.name}
+                <span className="text-[#8A5A3D]"> · {PERSON_LABEL[c.owedBy]} owes {owedToLabel}</span>
+              </span>
+              <span className="font-mono">{formatIDR(c.amount)}</span>
+            </div>
+          );
+        })}
       </div>
-      <div className="font-mono text-lg font-semibold text-[#5A2E19]">{formatIDR(amount)}</div>
-    </div>
+    </details>
   );
 }
 
@@ -303,7 +338,10 @@ function GoalCard({ goal }: { goal: Goal }) {
 
 function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
   return (
-    <div className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-[11px] last:border-b-0">
+    <Link
+      href={`/transactions/edit/${txn.id}`}
+      className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-[11px] last:border-b-0"
+    >
       <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-daniel-bg text-[15px]">
         {category.icon}
       </div>
@@ -321,7 +359,7 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
           {txn.splitAdel > 0 && <span className="h-1.5 w-1.5 rounded-full bg-adel" />}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
