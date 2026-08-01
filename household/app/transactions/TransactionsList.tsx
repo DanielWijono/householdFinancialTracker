@@ -22,6 +22,14 @@ const FILTERS: { id: Filter; label: string }[] = [
   { id: "joint", label: "Joint" },
 ];
 
+function monthParam(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function addMonths(d: Date, n: number) {
+  return new Date(d.getFullYear(), d.getMonth() + n, 1);
+}
+
 function dayLabel(iso: string, today: Date) {
   const [y, m, day] = iso.split("-").map(Number);
   const d = new Date(y, m - 1, day);
@@ -55,10 +63,12 @@ export default function TransactionsList({
   categories,
   transactions: allTransactions,
   today,
+  monthDate,
 }: {
   categories: Category[];
   transactions: Transaction[];
   today: Date;
+  monthDate: Date;
 }) {
   const [filter, setFilter] = useState<Filter>("all");
 
@@ -76,14 +86,43 @@ export default function TransactionsList({
   const paidAdel = filtered.filter((t) => t.paidBy === "adel").reduce((s, t) => s + t.amount, 0);
   const paidJoint = filtered.filter((t) => t.paidBy === "joint").reduce((s, t) => s + t.amount, 0);
   const groupedTxns = groupByDay(filtered, today);
-  const monthLabel = today.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const monthLabel = monthDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+  const isCurrentMonth =
+    monthDate.getFullYear() === today.getFullYear() && monthDate.getMonth() === today.getMonth();
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-10">
       <header className="px-6 pb-4 pt-7">
         <div className="mb-1 font-display text-2xl font-medium text-ink">Transactions</div>
-        <div className="text-[13px] text-gray">
-          {monthLabel} · {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+        <div className="flex items-center justify-between">
+          <div className="text-[13px] text-gray">
+            {filtered.length} {filtered.length === 1 ? "entry" : "entries"}
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/transactions?month=${monthParam(addMonths(monthDate, -1))}`}
+              aria-label="Previous month"
+              className="flex h-7 w-7 items-center justify-center rounded-full border-[0.5px] border-gray-line text-ink-soft"
+            >
+              ‹
+            </Link>
+            <span className="min-w-[110px] text-center text-[13px] font-medium text-ink">
+              {monthLabel}
+            </span>
+            {isCurrentMonth ? (
+              <span className="flex h-7 w-7 items-center justify-center rounded-full text-gray-line">
+                ›
+              </span>
+            ) : (
+              <Link
+                href={`/transactions?month=${monthParam(addMonths(monthDate, 1))}`}
+                aria-label="Next month"
+                className="flex h-7 w-7 items-center justify-center rounded-full border-[0.5px] border-gray-line text-ink-soft"
+              >
+                ›
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 

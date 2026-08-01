@@ -32,13 +32,41 @@ function dayLabel(iso: string, today: Date) {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export default async function Dashboard() {
+function parseMonthParam(month: string | undefined): Date {
+  if (month) {
+    const match = /^(\d{4})-(\d{2})$/.exec(month);
+    if (match) {
+      const year = Number(match[1]);
+      const monthIndex = Number(match[2]) - 1;
+      if (monthIndex >= 0 && monthIndex <= 11) return new Date(year, monthIndex, 1);
+    }
+  }
+  return new Date();
+}
+
+function monthParam(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+}
+
+function addMonths(d: Date, n: number) {
+  return new Date(d.getFullYear(), d.getMonth() + n, 1);
+}
+
+export default async function Dashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ month?: string }>;
+}) {
+  const { month } = await searchParams;
+  const monthDate = parseMonthParam(month);
   const today = new Date();
+  const isCurrentMonth =
+    monthDate.getFullYear() === today.getFullYear() && monthDate.getMonth() === today.getMonth();
   const supabase = await createClient();
   const [categories, transactions, budgets, goals] = await Promise.all([
     getCategories(supabase),
-    getTransactionsForMonth(supabase, today),
-    getBudgetsForMonth(supabase, today),
+    getTransactionsForMonth(supabase, monthDate),
+    getBudgetsForMonth(supabase, monthDate),
     getGoals(supabase),
   ]);
 
@@ -61,7 +89,29 @@ export default async function Dashboard() {
     <div className="mx-auto min-h-screen w-full max-w-[480px] bg-ivory pb-24">
       <header className="px-6 pb-6 pt-8">
         <div className="mb-1.5 flex items-center justify-between text-[13px] font-medium uppercase tracking-wider text-gray">
-          {monthLabel(today)}
+          <div className="flex items-center gap-2.5 normal-case tracking-normal">
+            <Link
+              href={`/?month=${monthParam(addMonths(monthDate, -1))}`}
+              aria-label="Previous month"
+              className="flex h-6 w-6 items-center justify-center rounded-full border-[0.5px] border-gray-line text-ink-soft"
+            >
+              ‹
+            </Link>
+            <span className="uppercase tracking-wider">{monthLabel(monthDate)}</span>
+            {isCurrentMonth ? (
+              <span className="flex h-6 w-6 items-center justify-center rounded-full text-gray-line">
+                ›
+              </span>
+            ) : (
+              <Link
+                href={`/?month=${monthParam(addMonths(monthDate, 1))}`}
+                aria-label="Next month"
+                className="flex h-6 w-6 items-center justify-center rounded-full border-[0.5px] border-gray-line text-ink-soft"
+              >
+                ›
+              </Link>
+            )}
+          </div>
           <SignOutButton />
         </div>
         <div className="mb-1 font-display text-[22px] font-medium text-ink">Total spent</div>
@@ -131,7 +181,10 @@ export default async function Dashboard() {
       <section className="px-5 pt-2">
         <div className="mb-3 mt-5 flex items-center justify-between font-display text-[17px] font-medium text-ink">
           Recent transactions
-          <Link href="/transactions" className="font-body text-xs font-medium text-gray">
+          <Link
+            href={`/transactions?month=${monthParam(monthDate)}`}
+            className="font-body text-xs font-medium text-gray"
+          >
             View all
           </Link>
         </div>
