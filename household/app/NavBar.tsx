@@ -17,7 +17,10 @@ export default function NavBar() {
   if (pathname === "/login") return null;
 
   return (
-    <nav className="sticky top-0 z-40 border-b-[0.5px] border-gray-line bg-ivory/90 backdrop-blur">
+    <nav
+      className="sticky top-0 z-40 border-b-[0.5px] border-gray-line bg-ivory/90 backdrop-blur"
+      style={{ paddingTop: "env(safe-area-inset-top)" }}
+    >
       <div className="mx-auto flex w-full max-w-[480px] items-center gap-1 overflow-x-auto px-4 py-2.5">
         {LINKS.map((link) => {
           const active = link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);

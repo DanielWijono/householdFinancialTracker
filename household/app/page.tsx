@@ -151,7 +151,7 @@ export default async function Dashboard() {
 
       <Link
         href="/add"
-        className="fixed bottom-7 left-1/2 w-[min(432px,calc(100%-48px))] -translate-x-1/2 rounded-card bg-ink px-4 py-4 text-center text-[14px] font-medium tracking-wide text-ivory shadow-fab"
+        className="fixed bottom-[calc(1.75rem+env(safe-area-inset-bottom))] left-1/2 w-[min(432px,calc(100%-48px))] -translate-x-1/2 rounded-card bg-ink px-4 py-4 text-center text-[14px] font-medium tracking-wide text-ivory shadow-fab"
       >
         + Add transaction
       </Link>

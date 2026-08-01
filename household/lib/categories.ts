@@ -23,4 +23,7 @@ export const categories: Category[] = [
   { id: "skincare", name: "Skincare", icon: "💄", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
   { id: "donation-daniel", name: "Donation Daniel", icon: "🎗️", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
   { id: "donation-adel", name: "Donation Adel", icon: "🎗️", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
+  { id: "padel-daniel", name: "Padel Daniel", icon: "🎾", defaultSplitDaniel: 100, defaultSplitAdel: 0, isPersonal: true },
+  { id: "padel-adel", name: "Padel Adel", icon: "🎾", defaultSplitDaniel: 0, defaultSplitAdel: 100, isPersonal: true },
+  { id: "household-item", name: "Household Item", icon: "🍴", defaultSplitDaniel: 50, defaultSplitAdel: 50, isPersonal: false },
 ];
