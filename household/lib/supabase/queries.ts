@@ -107,6 +107,34 @@ export async function getGoals(supabase: SupabaseClient): Promise<Goal[]> {
   }));
 }
 
+export async function getDashboardData(
+  supabase: SupabaseClient,
+  monthStart: Date,
+): Promise<{
+  categories: Category[];
+  transactions: Transaction[];
+  budgets: Budget[];
+  goals: Goal[];
+}> {
+  const { start } = monthRange(monthStart);
+  const { data, error } = await supabase.rpc("get_dashboard_data", { p_month: start });
+  if (error) throw error;
+
+  const result = data as {
+    categories: Category[];
+    transactions: Transaction[];
+    budgets: Budget[];
+    goals: Goal[];
+  };
+
+  return {
+    categories: result.categories ?? [],
+    transactions: (result.transactions ?? []).map((t) => ({ ...t, note: t.note ?? "" })),
+    budgets: result.budgets ?? [],
+    goals: result.goals ?? [],
+  };
+}
+
 export async function getJointContributionsForMonth(
   supabase: SupabaseClient,
   monthStart: Date,

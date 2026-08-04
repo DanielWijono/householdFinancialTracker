@@ -8,12 +8,7 @@ import {
   type CategorySettlement,
 } from "../lib/settlement";
 import { createClient } from "../lib/supabase/server";
-import {
-  getBudgetsForMonth,
-  getCategories,
-  getGoals,
-  getTransactionsForMonth,
-} from "../lib/supabase/queries";
+import { getDashboardData } from "../lib/supabase/queries";
 import SignOutButton from "./SignOutButton";
 
 const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
@@ -63,12 +58,7 @@ export default async function Dashboard({
   const isCurrentMonth =
     monthDate.getFullYear() === today.getFullYear() && monthDate.getMonth() === today.getMonth();
   const supabase = await createClient();
-  const [categories, transactions, budgets, goals] = await Promise.all([
-    getCategories(supabase),
-    getTransactionsForMonth(supabase, monthDate),
-    getBudgetsForMonth(supabase, monthDate),
-    getGoals(supabase),
-  ]);
+  const { categories, transactions, budgets, goals } = await getDashboardData(supabase, monthDate);
 
   function categoryOf(id: string) {
     return categories.find((c) => c.id === id)!;
