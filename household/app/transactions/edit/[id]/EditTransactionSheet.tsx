@@ -134,9 +134,14 @@ export default function EditTransactionSheet({
 
         <div className="mb-5 text-center">
           <div className="font-mono text-[15px] text-gray">Rp</div>
-          <div className="font-mono text-[44px] font-semibold tracking-tight text-ink">
-            {formatAmount(amount)}
-          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={formatAmount(amount)}
+            onChange={(e) => setAmount(e.target.value.replace(/\D/g, "").slice(0, 12))}
+            className="w-full bg-transparent text-center font-mono text-[44px] font-semibold tracking-tight text-ink outline-none"
+            aria-label="Amount"
+          />
         </div>
 
         <Keypad onKey={handleKeypad} />
