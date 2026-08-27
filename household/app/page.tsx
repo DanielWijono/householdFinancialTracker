@@ -366,32 +366,36 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
   return (
     <Link
       href={`/transactions/edit/${txn.id}`}
-      className="flex items-center gap-3 border-b-[0.5px] border-gray-line py-[11px] last:border-b-0"
+      className="flex items-start gap-3 border-b-[0.5px] border-gray-line py-[11px] last:border-b-0"
     >
       <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-daniel-bg text-[15px]">
         {category.icon}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[13.5px] font-medium text-ink">{txn.note}</div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-gray">
-          <span>
-            Paid by {PERSON_LABEL[txn.paidBy]}
-            {category.isPersonal ? " · Personal" : ""}
-          </span>
-          {txn.paidBy === "joint" &&
-            (txn.reimbursed ? (
-              <span className="rounded-full bg-gold-bg px-1.5 py-px text-[10px] font-medium text-gold-text">
-                ✓ Reimbursed
-              </span>
-            ) : (
-              <span className="rounded-full bg-terracotta-bg px-1.5 py-px text-[10px] font-medium text-terracotta">
-                Awaiting
-              </span>
-            ))}
-          {txn.createdBy && <span>· by {PERSON_LABEL[txn.createdBy]}</span>}
+        <div className="break-words text-[13.5px] font-medium text-ink">{txn.note}</div>
+        <div className="mt-0.5 truncate text-[11.5px] text-gray">
+          Paid by {PERSON_LABEL[txn.paidBy]}
+          {category.isPersonal ? " · Personal" : ""}
         </div>
+        {(txn.paidBy === "joint" || txn.createdBy) && (
+          <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            {txn.paidBy === "joint" &&
+              (txn.reimbursed ? (
+                <span className="rounded-full bg-gold-bg px-2 py-0.5 text-[10.5px] font-medium text-gold-text">
+                  ✓ Reimbursed
+                </span>
+              ) : (
+                <span className="rounded-full bg-terracotta-bg px-2 py-0.5 text-[10.5px] font-medium text-terracotta">
+                  Awaiting reimbursement
+                </span>
+              ))}
+            {txn.createdBy && (
+              <span className="text-[11px] text-gray">by {PERSON_LABEL[txn.createdBy]}</span>
+            )}
+          </div>
+        )}
       </div>
-      <div className="text-right">
+      <div className="shrink-0 text-right">
         <div className="font-mono text-sm font-medium text-ink">{formatIDR(txn.amount)}</div>
         <div className="mt-1 flex justify-end gap-1">
           {txn.splitDaniel > 0 && <span className="h-1.5 w-1.5 rounded-full bg-daniel" />}

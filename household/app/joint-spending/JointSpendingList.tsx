@@ -65,7 +65,7 @@ export default function JointSpendingList({
                 {category.icon}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[13.5px] font-medium text-ink">
+                <div className="break-words text-[13.5px] font-medium text-ink">
                   {t.note || category.name}
                 </div>
                 <div className="mt-0.5 text-[11.5px] text-gray">
@@ -77,7 +77,7 @@ export default function JointSpendingList({
               </div>
             </div>
 
-            <div className="mt-2.5 flex items-center gap-2 pl-12">
+            <div className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-2 pl-12">
               {t.reimbursed ? (
                 <>
                   <span className="rounded-full bg-gold-bg px-2.5 py-1 text-[11px] font-medium text-gold-text">
