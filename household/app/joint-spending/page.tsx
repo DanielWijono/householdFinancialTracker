@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatIDR } from "../../lib/settlement";
 import { createClient } from "../../lib/supabase/server";
 import { getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
+import JointSpendingList from "./JointSpendingList";
 
 function monthLabel(date: Date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
@@ -17,6 +18,9 @@ export default async function JointSpendingPage() {
 
   const jointTxns = transactions.filter((t) => t.paidBy === "joint");
   const total = jointTxns.reduce((sum, t) => sum + t.amount, 0);
+
+  const awaiting = jointTxns.filter((t) => !t.reimbursed);
+  const awaitingTotal = awaiting.reduce((sum, t) => sum + t.amount, 0);
 
   const byCategory = new Map<string, number>();
   for (const t of jointTxns) {
@@ -44,6 +48,11 @@ export default async function JointSpendingPage() {
         <div className="font-mono text-[42px] font-semibold tracking-tight text-ink">
           {formatIDR(total)}
         </div>
+        {awaiting.length > 0 && (
+          <div className="mt-1.5 text-[13px] font-medium text-terracotta">
+            {formatIDR(awaitingTotal)} awaiting reimbursement · {awaiting.length} left
+          </div>
+        )}
       </header>
 
       <section className="px-5 pt-2">
@@ -67,6 +76,15 @@ export default async function JointSpendingPage() {
           ))}
         </div>
       </section>
+
+      {jointTxns.length > 0 && (
+        <section className="px-5 pt-6">
+          <div className="mb-2.5 text-[11px] font-semibold uppercase tracking-wider text-gray">
+            Transactions
+          </div>
+          <JointSpendingList jointTxns={jointTxns} categories={categories} />
+        </section>
+      )}
     </div>
   );
 }

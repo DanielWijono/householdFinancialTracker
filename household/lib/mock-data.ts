@@ -11,17 +11,20 @@ export type Transaction = {
   splitAdel: number;
   note: string;
   date: string; // ISO date
+  reimbursed: boolean;
+  reimbursedDate: string | null; // ISO date, set only when reimbursed
+  createdBy: "daniel" | "adel" | null; // which member logged it; null = unknown
 };
 
 export const transactions: Transaction[] = [
-  { id: "t1", categoryId: "groceries", amount: 340000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Superindo — weekly groceries", date: "2026-07-13" },
-  { id: "t3", categoryId: "transport-daniel", amount: 200000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Pertamina — fuel", date: "2026-07-12" },
-  { id: "t4", categoryId: "gym", amount: 450000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Gym membership", date: "2026-07-12" },
-  { id: "t5", categoryId: "groceries", amount: 1760000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Monthly groceries run", date: "2026-07-05" },
-  { id: "t6", categoryId: "transport-adel", amount: 1650000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Car service", date: "2026-07-03" },
-  { id: "t7", categoryId: "dining", amount: 650000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Dinner — Plataran", date: "2026-07-09" },
-  { id: "t8", categoryId: "skincare", amount: 550000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Skincare restock", date: "2026-07-09" },
-  { id: "t9", categoryId: "groceries", amount: 900000, paidBy: "joint", splitDaniel: 50, splitAdel: 50, note: "Groceries — joint account", date: "2026-07-08" },
+  { id: "t1", categoryId: "groceries", amount: 340000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Superindo — weekly groceries", date: "2026-07-13", reimbursed: false, reimbursedDate: null, createdBy: "adel" },
+  { id: "t3", categoryId: "transport-daniel", amount: 200000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Pertamina — fuel", date: "2026-07-12", reimbursed: false, reimbursedDate: null, createdBy: "daniel" },
+  { id: "t4", categoryId: "gym", amount: 450000, paidBy: "daniel", splitDaniel: 100, splitAdel: 0, note: "Gym membership", date: "2026-07-12", reimbursed: false, reimbursedDate: null, createdBy: "daniel" },
+  { id: "t5", categoryId: "groceries", amount: 1760000, paidBy: "daniel", splitDaniel: 50, splitAdel: 50, note: "Monthly groceries run", date: "2026-07-05", reimbursed: false, reimbursedDate: null, createdBy: "daniel" },
+  { id: "t6", categoryId: "transport-adel", amount: 1650000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Car service", date: "2026-07-03", reimbursed: false, reimbursedDate: null, createdBy: "adel" },
+  { id: "t7", categoryId: "dining", amount: 650000, paidBy: "adel", splitDaniel: 50, splitAdel: 50, note: "Dinner — Plataran", date: "2026-07-09", reimbursed: false, reimbursedDate: null, createdBy: "daniel" },
+  { id: "t8", categoryId: "skincare", amount: 550000, paidBy: "adel", splitDaniel: 0, splitAdel: 100, note: "Skincare restock", date: "2026-07-09", reimbursed: false, reimbursedDate: null, createdBy: "adel" },
+  { id: "t9", categoryId: "groceries", amount: 900000, paidBy: "joint", splitDaniel: 50, splitAdel: 50, note: "Groceries — joint account", date: "2026-07-08", reimbursed: true, reimbursedDate: "2026-07-10", createdBy: "daniel" },
 ];
 
 export type Budget = {

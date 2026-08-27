@@ -21,6 +21,12 @@ function formatAmount(raw: string) {
   return new Intl.NumberFormat("id-ID").format(Number(raw));
 }
 
+function todayISO() {
+  const d = new Date();
+  const tzOffsetMs = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - tzOffsetMs).toISOString().slice(0, 10);
+}
+
 export default function EditTransactionSheet({
   txn,
   categories,
@@ -35,6 +41,8 @@ export default function EditTransactionSheet({
   const [paidBy, setPaidBy] = useState<Person>(txn.paidBy);
   const [note, setNote] = useState(txn.note);
   const [date, setDate] = useState(txn.date);
+  const [reimbursed, setReimbursed] = useState(txn.reimbursed);
+  const [reimbursedDate, setReimbursedDate] = useState(txn.reimbursedDate ?? todayISO());
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState("");
@@ -57,6 +65,7 @@ export default function EditTransactionSheet({
       setPaidBy((p) => {
         const next = p === "joint" ? "daniel" : p;
         setSplitDaniel(next === "daniel" ? 100 : 0);
+        setReimbursed(false);
         return next;
       });
     }
@@ -64,6 +73,7 @@ export default function EditTransactionSheet({
 
   function selectPaidBy(p: Person) {
     setPaidBy(p);
+    if (p !== "joint") setReimbursed(false);
     if (isDonation) {
       setSplitDaniel(p === "daniel" ? 100 : 0);
     }
@@ -97,6 +107,11 @@ export default function EditTransactionSheet({
         split_adel: splitAdel,
         note: note || null,
         date,
+        // Reimbursement flag only applies to joint spend; forced off for anything
+        // else regardless of the toggle state.
+        reimbursed: paidBy === "joint" ? reimbursed : false,
+        reimbursed_date:
+          paidBy === "joint" && reimbursed && reimbursedDate ? reimbursedDate : null,
       })
       .eq("id", txn.id);
     setSaving(false);
@@ -238,10 +253,44 @@ export default function EditTransactionSheet({
           })}
         </div>
         {paidBy === "joint" && (
-          <p className="mt-2 text-[11px] text-gray">
-            Joint-account spend is tracked against budget but excluded from settlement — you&apos;ve
-            already both contributed to the pool.
-          </p>
+          <>
+            <p className="mt-2 text-[11px] text-gray">
+              Joint-account spend is tracked against budget but excluded from settlement —
+              you&apos;ve already both contributed to the pool.
+            </p>
+
+            <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">
+              Reimbursement
+            </div>
+            <button
+              type="button"
+              onClick={() => setReimbursed((r) => !r)}
+              className={`flex w-full items-center justify-between rounded-[12px] border bg-card px-3.5 py-3 text-left text-[13px] font-medium ${
+                reimbursed
+                  ? "border-[1.5px] border-ink bg-gold-bg text-gold-text"
+                  : "border-[0.5px] border-gray-line text-ink-soft"
+              }`}
+            >
+              {reimbursed ? "Reimbursed from joint pool" : "Not yet reimbursed"}
+              <span
+                className={`flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-semibold text-white ${
+                  reimbursed ? "bg-gold" : "bg-gray-line"
+                }`}
+              >
+                {reimbursed ? "✓" : ""}
+              </span>
+            </button>
+            {reimbursed && (
+              <input
+                type="date"
+                value={reimbursedDate}
+                max={todayISO()}
+                onChange={(e) => setReimbursedDate(e.target.value)}
+                aria-label="Reimbursed date"
+                className="mt-2 w-full rounded-[12px] border-[0.5px] border-gray-line bg-card px-3.5 py-3 text-[13.5px] text-ink outline-none"
+              />
+            )}
+          </>
         )}
 
         <div className="mb-2.5 mt-4 text-[11px] font-semibold uppercase tracking-wider text-gray">

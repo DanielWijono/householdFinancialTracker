@@ -373,9 +373,22 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
       </div>
       <div className="min-w-0 flex-1">
         <div className="truncate text-[13.5px] font-medium text-ink">{txn.note}</div>
-        <div className="mt-0.5 text-[11.5px] text-gray">
-          Paid by {PERSON_LABEL[txn.paidBy]}
-          {category.isPersonal ? " · Personal" : ""}
+        <div className="mt-0.5 flex items-center gap-1.5 text-[11.5px] text-gray">
+          <span>
+            Paid by {PERSON_LABEL[txn.paidBy]}
+            {category.isPersonal ? " · Personal" : ""}
+          </span>
+          {txn.paidBy === "joint" &&
+            (txn.reimbursed ? (
+              <span className="rounded-full bg-gold-bg px-1.5 py-px text-[10px] font-medium text-gold-text">
+                ✓ Reimbursed
+              </span>
+            ) : (
+              <span className="rounded-full bg-terracotta-bg px-1.5 py-px text-[10px] font-medium text-terracotta">
+                Awaiting
+              </span>
+            ))}
+          {txn.createdBy && <span>· by {PERSON_LABEL[txn.createdBy]}</span>}
         </div>
       </div>
       <div className="text-right">

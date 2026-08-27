@@ -221,7 +221,18 @@ function TxnRow({ txn, category }: { txn: Transaction; category: Category }) {
           >
             {badgeLetter}
           </span>
-          {PERSON_LABEL[txn.paidBy]} · {category.isPersonal ? "Personal" : category.name}
+          <span>{PERSON_LABEL[txn.paidBy]} · {category.isPersonal ? "Personal" : category.name}</span>
+          {txn.paidBy === "joint" &&
+            (txn.reimbursed ? (
+              <span className="rounded-full bg-gold-bg px-1.5 py-px text-[10px] font-medium text-gold-text">
+                ✓ Reimbursed
+              </span>
+            ) : (
+              <span className="rounded-full bg-terracotta-bg px-1.5 py-px text-[10px] font-medium text-terracotta">
+                Awaiting
+              </span>
+            ))}
+          {txn.createdBy && <span>· by {PERSON_LABEL[txn.createdBy]}</span>}
         </div>
       </div>
       <div className="text-right">

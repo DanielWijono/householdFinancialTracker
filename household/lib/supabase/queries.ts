@@ -2,6 +2,15 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Category } from "../categories";
 import type { Budget, Goal, JointContribution, Transaction } from "../mock-data";
 
+// PostgREST embeds `creator:household_users(name)` as either an object or a
+// single-element array depending on how it infers the relationship. Normalise
+// both to the member name.
+function creatorName(creator: unknown): "daniel" | "adel" | null {
+  const c = Array.isArray(creator) ? creator[0] : creator;
+  const name = (c as { name?: string } | null | undefined)?.name;
+  return name === "daniel" || name === "adel" ? name : null;
+}
+
 function monthRange(monthStart: Date) {
   const start = new Date(Date.UTC(monthStart.getFullYear(), monthStart.getMonth(), 1));
   const end = new Date(Date.UTC(monthStart.getFullYear(), monthStart.getMonth() + 1, 1));
@@ -32,7 +41,9 @@ export async function getTransactionsForMonth(
   const { start, end } = monthRange(monthStart);
   const { data, error } = await supabase
     .from("transactions")
-    .select("id, category_id, amount, paid_by, split_daniel, split_adel, note, date")
+    .select(
+      "id, category_id, amount, paid_by, split_daniel, split_adel, note, date, reimbursed, reimbursed_date, created_by, creator:household_users(name)",
+    )
     .gte("date", start)
     .lt("date", end)
     .order("date", { ascending: false });
@@ -47,6 +58,9 @@ export async function getTransactionsForMonth(
     splitAdel: t.split_adel,
     note: t.note ?? "",
     date: t.date,
+    reimbursed: t.reimbursed ?? false,
+    reimbursedDate: t.reimbursed_date ?? null,
+    createdBy: creatorName(t.creator),
   }));
 }
 
@@ -56,7 +70,9 @@ export async function getTransactionById(
 ): Promise<Transaction | null> {
   const { data, error } = await supabase
     .from("transactions")
-    .select("id, category_id, amount, paid_by, split_daniel, split_adel, note, date")
+    .select(
+      "id, category_id, amount, paid_by, split_daniel, split_adel, note, date, reimbursed, reimbursed_date, created_by, creator:household_users(name)",
+    )
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -71,6 +87,9 @@ export async function getTransactionById(
     splitAdel: data.split_adel,
     note: data.note ?? "",
     date: data.date,
+    reimbursed: data.reimbursed ?? false,
+    reimbursedDate: data.reimbursed_date ?? null,
+    createdBy: creatorName(data.creator),
   };
 }
 
@@ -129,7 +148,13 @@ export async function getDashboardData(
 
   return {
     categories: result.categories ?? [],
-    transactions: (result.transactions ?? []).map((t) => ({ ...t, note: t.note ?? "" })),
+    transactions: (result.transactions ?? []).map((t) => ({
+      ...t,
+      note: t.note ?? "",
+      reimbursed: t.reimbursed ?? false,
+      reimbursedDate: t.reimbursedDate ?? null,
+      createdBy: t.createdBy ?? null,
+    })),
     budgets: result.budgets ?? [],
     goals: result.goals ?? [],
   };
