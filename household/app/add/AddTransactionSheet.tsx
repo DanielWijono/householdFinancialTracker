@@ -103,15 +103,21 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
       reimbursed_date:
         paidBy === "joint" && reimbursed && reimbursedDate ? reimbursedDate : null,
     });
-    setSaving(false);
-
     if (insertError) {
+      setSaving(false);
       setError(insertError.message);
       return;
     }
 
-    router.push("/");
+    // Refresh server data, then step back to the page we came from so it updates
+    // in place instead of flashing its route-level loading skeleton. Falls back
+    // to a push when there is no in-app history (e.g. a direct deep link).
     router.refresh();
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/");
+    }
   }
 
   return (

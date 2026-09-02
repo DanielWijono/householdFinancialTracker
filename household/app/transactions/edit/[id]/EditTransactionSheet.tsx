@@ -114,15 +114,14 @@ export default function EditTransactionSheet({
           paidBy === "joint" && reimbursed && reimbursedDate ? reimbursedDate : null,
       })
       .eq("id", txn.id);
-    setSaving(false);
 
     if (updateError) {
+      setSaving(false);
       setError(updateError.message);
       return;
     }
 
-    router.push("/transactions");
-    router.refresh();
+    leaveTo("/transactions");
   }
 
   async function handleDelete() {
@@ -130,15 +129,26 @@ export default function EditTransactionSheet({
     setDeleting(true);
     const supabase = createClient();
     const { error: deleteError } = await supabase.from("transactions").delete().eq("id", txn.id);
-    setDeleting(false);
 
     if (deleteError) {
+      setDeleting(false);
       setError(deleteError.message);
       return;
     }
 
-    router.push("/transactions");
+    leaveTo("/transactions");
+  }
+
+  // Refresh server data, then step back to the page we came from so it updates
+  // in place instead of flashing its route-level loading skeleton. Falls back to
+  // a push when there is no in-app history (e.g. a direct deep link).
+  function leaveTo(dest: string) {
     router.refresh();
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push(dest);
+    }
   }
 
   return (
