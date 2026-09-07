@@ -1,7 +1,8 @@
+import ReimbursementShortcut from "../../components/ReimbursementShortcut";
 import Link from "next/link";
 import { formatIDR } from "../../lib/settlement";
 import { createClient } from "../../lib/supabase/server";
-import { getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
+import { getAwaitingReimbursements, getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
 import JointSpendingList from "./JointSpendingList";
 
 function monthLabel(date: Date) {
@@ -11,9 +12,10 @@ function monthLabel(date: Date) {
 export default async function JointSpendingPage() {
   const today = new Date();
   const supabase = await createClient();
-  const [categories, transactions] = await Promise.all([
+  const [categories, transactions, allAwaiting] = await Promise.all([
     getCategories(supabase),
     getTransactionsForMonth(supabase, today),
+    getAwaitingReimbursements(supabase),
   ]);
 
   const jointTxns = transactions.filter((t) => t.paidBy === "joint");
@@ -54,6 +56,8 @@ export default async function JointSpendingPage() {
           </div>
         )}
       </header>
+
+      <ReimbursementShortcut transactions={allAwaiting} />
 
       <section className="px-5 pt-2">
         <div className="rounded-card border-[0.5px] border-gray-line bg-card px-[18px] py-1.5">

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import ReimbursementShortcut from "../../components/ReimbursementShortcut";
 import type { Category } from "../../lib/categories";
 import type { Transaction } from "../../lib/mock-data";
 
@@ -61,10 +62,12 @@ function groupByDay(txns: Transaction[], today: Date) {
 
 export default function TransactionsList({
   categories,
+  awaiting,
   transactions: allTransactions,
   today,
   monthDate,
 }: {
+  awaiting: Transaction[];
   categories: Category[];
   transactions: Transaction[];
   today: Date;
@@ -125,6 +128,8 @@ export default function TransactionsList({
           </div>
         </div>
       </header>
+
+      <ReimbursementShortcut transactions={awaiting} />
 
       <div className="flex gap-2 overflow-x-auto px-5 pb-4">
         {FILTERS.map((f) => {

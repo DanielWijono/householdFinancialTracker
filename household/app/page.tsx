@@ -9,6 +9,8 @@ import {
 } from "../lib/settlement";
 import { createClient } from "../lib/supabase/server";
 import { getDashboardData } from "../lib/supabase/queries";
+import ReimbursementShortcut from "../components/ReimbursementShortcut";
+import { getAwaitingReimbursements } from "../lib/supabase/queries";
 import SignOutButton from "./SignOutButton";
 
 const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
@@ -58,7 +60,9 @@ export default async function Dashboard({
   const isCurrentMonth =
     monthDate.getFullYear() === today.getFullYear() && monthDate.getMonth() === today.getMonth();
   const supabase = await createClient();
-  const { categories, transactions, budgets, goals } = await getDashboardData(supabase, monthDate);
+  const [{ categories, transactions, budgets, goals }, awaiting] = await Promise.all([
+    getDashboardData(supabase, monthDate), getAwaitingReimbursements(supabase),
+  ]);
 
   function categoryOf(id: string) {
     return categories.find((c) => c.id === id)!;
@@ -117,6 +121,8 @@ export default async function Dashboard({
           </div>
         )}
       </header>
+
+      <ReimbursementShortcut transactions={awaiting} />
 
       <SettlementCard
         owedBy={settlement.owedBy}

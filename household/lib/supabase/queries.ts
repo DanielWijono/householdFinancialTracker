@@ -64,6 +64,29 @@ export async function getTransactionsForMonth(
   }));
 }
 
+// Keep reading until empty: a server may cap responses below our page size.
+export async function getAwaitingReimbursements(supabase: SupabaseClient): Promise<Transaction[]> {
+  const transactions: Transaction[] = [];
+  for (;;) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("id, category_id, amount, paid_by, split_daniel, split_adel, note, date, reimbursed, reimbursed_date, created_by, creator:household_users(name)")
+      .eq("paid_by", "joint")
+      .eq("reimbursed", false)
+      .order("date", { ascending: true })
+      .order("id", { ascending: true })
+      .range(transactions.length, transactions.length + 499);
+    if (error) throw error;
+    if (!data.length) return transactions;
+    transactions.push(...data.map((t) => ({
+      id: t.id, categoryId: t.category_id, amount: Number(t.amount),
+      paidBy: t.paid_by, splitDaniel: t.split_daniel, splitAdel: t.split_adel,
+      note: t.note ?? "", date: t.date, reimbursed: t.reimbursed,
+      reimbursedDate: t.reimbursed_date ?? null, createdBy: creatorName(t.creator),
+    })));
+  }
+}
+
 export async function getTransactionById(
   supabase: SupabaseClient,
   id: string,

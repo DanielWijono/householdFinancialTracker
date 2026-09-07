@@ -1,5 +1,5 @@
 import { createClient } from "../../lib/supabase/server";
-import { getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
+import { getAwaitingReimbursements, getCategories, getTransactionsForMonth } from "../../lib/supabase/queries";
 import TransactionsList from "./TransactionsList";
 
 function parseMonthParam(month: string | undefined): Date {
@@ -23,14 +23,16 @@ export default async function TransactionsPage({
   const monthDate = parseMonthParam(month);
   const today = new Date();
   const supabase = await createClient();
-  const [categories, transactions] = await Promise.all([
+  const [categories, transactions, awaiting] = await Promise.all([
     getCategories(supabase),
     getTransactionsForMonth(supabase, monthDate),
+    getAwaitingReimbursements(supabase),
   ]);
 
   return (
     <TransactionsList
       categories={categories}
+      awaiting={awaiting}
       transactions={transactions}
       today={today}
       monthDate={monthDate}
