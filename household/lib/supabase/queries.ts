@@ -77,13 +77,14 @@ export async function getAwaitingReimbursements(supabase: SupabaseClient): Promi
       .order("id", { ascending: true })
       .range(transactions.length, transactions.length + 499);
     if (error) throw error;
-    if (!data.length) return transactions;
     transactions.push(...data.map((t) => ({
       id: t.id, categoryId: t.category_id, amount: Number(t.amount),
       paidBy: t.paid_by, splitDaniel: t.split_daniel, splitAdel: t.split_adel,
       note: t.note ?? "", date: t.date, reimbursed: t.reimbursed,
       reimbursedDate: t.reimbursed_date ?? null, createdBy: creatorName(t.creator),
     })));
+    // A short page means we've reached the end — skip the extra empty round trip.
+    if (data.length < 500) return transactions;
   }
 }
 

@@ -25,11 +25,11 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Revalidates the session token — required so expired sessions get
-  // refreshed before Server Components read cookies (they can't write them).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Refreshes an expired session (Server Components can't write cookies) and
+  // verifies the JWT. With asymmetric signing keys this is a local check, no
+  // round trip to Supabase Auth; legacy HS256 keys fall back to a network call.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims;
 
   const isPublicPath = PUBLIC_PATHS.some((p) => request.nextUrl.pathname.startsWith(p));
 
