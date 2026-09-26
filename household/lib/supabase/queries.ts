@@ -83,8 +83,9 @@ export async function getAwaitingReimbursements(supabase: SupabaseClient): Promi
       note: t.note ?? "", date: t.date, reimbursed: t.reimbursed,
       reimbursedDate: t.reimbursed_date ?? null, createdBy: creatorName(t.creator),
     })));
-    // A short page means we've reached the end — skip the extra empty round trip.
-    if (data.length < 500) return transactions;
+    // Stop only on an empty page: the server's max_rows may cap pages below
+    // 500, so a short page doesn't prove we've reached the end.
+    if (!data.length) return transactions;
   }
 }
 

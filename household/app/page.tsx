@@ -15,6 +15,10 @@ import SignOutButton from "./SignOutButton";
 
 const PERSON_LABEL = { daniel: "Daniel", adel: "Adel", joint: "Joint Account" } as const;
 
+function shortDate(iso: string) {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("en-US", { day: "numeric", month: "short" });
+}
+
 function monthLabel(date: Date) {
   return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
@@ -254,18 +258,51 @@ function SettlementCard({
           const category = categoryOf(c.categoryId);
           const owedToLabel = c.owedBy === "daniel" ? "Adel" : "Daniel";
           return (
-            <div
-              key={c.categoryId}
-              className="flex items-center justify-between py-1 text-[12.5px] text-[#5A2E19]"
-            >
-              <span>
-                {category.icon} {category.name}
-                <span className="text-[#8A5A3D]"> · {PERSON_LABEL[c.owedBy]} owes {owedToLabel}</span>
-              </span>
-              <span className="font-mono">{formatIDR(c.amount)}</span>
-            </div>
+            <details key={c.categoryId} className="group/cat">
+              <summary className="flex cursor-pointer list-none items-center justify-between py-1 text-[12.5px] text-[#5A2E19] [&::-webkit-details-marker]:hidden">
+                <span>
+                  <span className="mr-1 inline-block text-[10px] text-[#8A5A3D] transition-transform group-open/cat:rotate-90">
+                    ▸
+                  </span>
+                  {category.icon} {category.name}
+                  <span className="text-[#8A5A3D]"> · {PERSON_LABEL[c.owedBy]} owes {owedToLabel}</span>
+                </span>
+                <span className="font-mono">{formatIDR(c.amount)}</span>
+              </summary>
+              <ul className="mb-1.5 ml-3.5 border-l-[0.5px] border-[#D9AF95] pl-2.5">
+                {c.items.map(({ txn, net }) => (
+                  <li key={txn.id}>
+                    <Link
+                      href={`/transactions/edit/${txn.id}`}
+                      className="flex items-start justify-between gap-3 py-1.5 text-[12px] text-[#5A2E19]"
+                    >
+                      <span className="min-w-0">
+                        <span className="block break-words">
+                          {shortDate(txn.date)} · {txn.note || category.name}
+                        </span>
+                        <span className="block text-[11px] text-[#8A5A3D]">
+                          {formatIDR(txn.amount)} · {PERSON_LABEL[txn.paidBy]} paid · {txn.splitDaniel}/
+                          {txn.splitAdel}
+                        </span>
+                      </span>
+                      <span
+                        className={`shrink-0 font-mono ${net > 0 ? "text-daniel" : "text-adel"}`}
+                        title={net > 0 ? "Adel owes Daniel" : "Daniel owes Adel"}
+                      >
+                        {net > 0 ? "D +" : "A +"}
+                        {formatIDR(Math.abs(net)).replace("Rp ", "")}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </details>
           );
         })}
+        <div className="mt-2 text-[10.5px] text-[#8A5A3D]">
+          <span className="text-daniel">D +</span> Adel owes Daniel · <span className="text-adel">A +</span> Daniel
+          owes Adel
+        </div>
       </div>
     </details>
   );

@@ -31,10 +31,19 @@ export function computeSettlement(txns: Transaction[]): Settlement {
   return net > 0 ? { owedBy: "adel", amount: net } : { owedBy: "daniel", amount: -net };
 }
 
+export type SettlementItem = {
+  txn: Transaction;
+  // Signed effect on the settlement: positive = Adel owes Daniel more,
+  // negative = Daniel owes Adel more.
+  net: number;
+};
+
 export type CategorySettlement = {
   categoryId: string;
   owedBy: "daniel" | "adel";
   amount: number;
+  // Transactions that moved the settlement in this category, newest first.
+  items: SettlementItem[];
 };
 
 /**
@@ -44,6 +53,7 @@ export type CategorySettlement = {
  */
 export function computeSettlementByCategory(txns: Transaction[]): CategorySettlement[] {
   const netByCategory = new Map<string, number>();
+  const itemsByCategory = new Map<string, SettlementItem[]>();
 
   for (const t of txns) {
     if (t.paidBy === "joint") continue;
@@ -51,6 +61,11 @@ export function computeSettlementByCategory(txns: Transaction[]): CategorySettle
     const danielFairShare = Math.round((t.amount * t.splitDaniel) / 100);
     const net = danielPaid - danielFairShare;
     netByCategory.set(t.categoryId, (netByCategory.get(t.categoryId) ?? 0) + net);
+    if (net !== 0) {
+      const items = itemsByCategory.get(t.categoryId) ?? [];
+      items.push({ txn: t, net });
+      itemsByCategory.set(t.categoryId, items);
+    }
   }
 
   const result: CategorySettlement[] = [];
@@ -60,6 +75,9 @@ export function computeSettlementByCategory(txns: Transaction[]): CategorySettle
       categoryId,
       owedBy: net > 0 ? "adel" : "daniel",
       amount: Math.abs(net),
+      items: (itemsByCategory.get(categoryId) ?? []).sort((a, b) =>
+        b.txn.date.localeCompare(a.txn.date),
+      ),
     });
   }
   return result.sort((a, b) => b.amount - a.amount);
