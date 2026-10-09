@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Category } from "../../lib/categories";
 import { createClient } from "../../lib/supabase/client";
+import ScanReceiptButton from "./ScanReceiptButton";
 
 type Person = "daniel" | "adel" | "joint";
 
@@ -40,6 +41,8 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
   const [reimbursedDate, setReimbursedDate] = useState(todayISO());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [scanHint, setScanHint] = useState("");
+  // Last note filled by a scan, so a rescan can replace it without clobbering typed notes.
 
   const category = useMemo(
     () => categories.find((c) => c.id === categoryId)!,
@@ -125,6 +128,18 @@ export default function AddTransactionSheet({ categories }: { categories: Catego
       <div className="w-full max-w-[480px] rounded-t-sheet bg-ivory px-6 pb-7 pt-3 shadow-sheet">
         <div className="mx-auto mb-4 h-1 w-9 rounded-full bg-gray-line" />
         <h1 className="mb-5 font-display text-[19px] font-medium text-ink">Add transaction</h1>
+
+        <ScanReceiptButton
+          onResult={({ amount: total, note: scannedNote }) => {
+            if (total) setAmount(String(total).slice(0, 12));
+            // Each scan describes a new receipt: always replace the note.
+            setNote(scannedNote ?? "");
+            setScanHint(total ? "" : "Couldn't find a total — enter it manually.");
+          }}
+        />
+        {scanHint && (
+          <p className="-mt-2 mb-3 text-center text-[12px] text-terracotta">{scanHint}</p>
+        )}
 
         <div className="mb-5 text-center">
           <div className="font-mono text-[15px] text-gray">Rp</div>
