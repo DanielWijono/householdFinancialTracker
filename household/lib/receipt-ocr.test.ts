@@ -139,4 +139,25 @@ Dengan VIP, kamu sudah hemat Rp8.500.`;
     expect(parseItems(text)).toEqual(["LocknLock Round Food Container 1.9L x2"]);
     expect(parseReceiptTotal(text)).toBe(123325);
   });
+
+  it("app receipt: groups variants, drops thumbnail label (real Shopee scan)", () => {
+    const text = `Nanvan Official Store Selesai
+| Sedang NANVAN NVN-WNO1 Kantong Jaring L...
+5 SEDANG x2
+
+= i
+Rp20.000Rp13.500
+Bn NANVAN NVN-WNO1 Kantong Jaring L...
+—= BRA x1
+
+|
+
+Rp20.000Rp16.500
+Besar NANVAN NVN-WNO1 Kantong Jaring L...
+——— BESAR x1
+- Rp20.000 Rp15.500
+Total 4 produk: Rp55.947`;
+    expect(parseItems(text)).toEqual(["NANVAN NVN-WNO1 Kantong Jaring L — SEDANG x2, BRA x1, BESAR x1"]);
+    expect(parseReceiptTotal(text)).toBe(55947);
+  });
 });

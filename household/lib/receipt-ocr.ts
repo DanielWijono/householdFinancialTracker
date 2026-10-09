@@ -101,11 +101,20 @@ const QTY_RE = /(?:^|\s)[x×]\s?(\d{1,3})\s*$/i;
 
 // Item lines sit above the total.
 // Paper receipts: "<name> <qty> <price> ..." on one line → "<name> <qty>".
-// App receipts (Shopee etc.): name, "x2" and "Rp63.750" on separate lines → "<name> x2".
+// App receipts (Shopee etc.): name, "x2" and "Rp63.750" on separate lines → "<name> x2";
+// consecutive variants of one product collapse to "<name> — SEDANG x2, BRA x1".
 export function parseItems(text: string): string[] {
-  const items: string[] = [];
+  const items: { name: string; detail: string; variant: boolean }[] = [];
   let pendingName: string | null = null;
   let pendingQty: string | null = null;
+  let pendingVariant: string | null = null;
+  const flush = (name: string) => {
+    // Thumbnail labels can leak in as the first word ("Sedang NANVAN ..." with variant SEDANG).
+    const words = name.split(" ");
+    if (pendingVariant && words.length > 1 && words[0].toLowerCase() === pendingVariant.toLowerCase()) words.shift();
+    const detail = [pendingVariant, pendingQty && `x${pendingQty}`].filter(Boolean).join(" ");
+    items.push({ name: words.join(" "), detail, variant: !!pendingVariant });
+  };
   for (const raw of text.split(/\r?\n/)) {
     const line = normalizeLine(raw.trim());
     if (!line) continue;
@@ -116,6 +125,9 @@ export function parseItems(text: string): string[] {
       const qty = QTY_RE.exec(line);
       if (qty) {
         pendingQty = qty[1];
+        // Variant sits left of the qty ("SEDANG x2"); drop noise tokens like "5" or "—=".
+        const variant = line.slice(0, qty.index).split(/\s+/).filter(hasWord).join(" ");
+        pendingVariant = variant || null;
         continue;
       }
       const letters = (line.match(/[A-Za-z]/g) ?? []).length;
@@ -125,15 +137,30 @@ export function parseItems(text: string): string[] {
         while (words.length && !hasWord(words[0])) words.shift();
         pendingName = trimJunk(words.join(" ").replace(/(\.{2,}|…)$/, ""));
         pendingQty = null;
+        pendingVariant = null;
       }
       continue;
     }
     const name = trimJunk(line.slice(0, m.index).replace(/Rp\s*$/i, ""));
-    if (hasWord(name)) items.push(name);
-    else if (pendingName) items.push(pendingQty ? `${pendingName} x${pendingQty}` : pendingName);
+    if (hasWord(name)) items.push({ name, detail: "", variant: false });
+    else if (pendingName) flush(pendingName);
     else continue;
     pendingName = null;
     pendingQty = null;
+    pendingVariant = null;
   }
-  return items;
+
+  const groups: { name: string; details: string[]; variant: boolean }[] = [];
+  for (const it of items) {
+    const last = groups[groups.length - 1];
+    if (last && it.detail && last.details.length && last.name === it.name) {
+      last.details.push(it.detail);
+      last.variant ||= it.variant;
+    } else {
+      groups.push({ name: it.name, details: it.detail ? [it.detail] : [], variant: it.variant });
+    }
+  }
+  return groups.map(({ name, details, variant }) =>
+    !details.length ? name : `${name}${variant || details.length > 1 ? " — " : " "}${details.join(", ")}`,
+  );
 }
