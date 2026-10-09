@@ -126,4 +126,17 @@ Produk i“
 | Total Belanja 109, 000. 00`;
     expect(parseItems(text)).toEqual(["BAZAAR 20K 4", "BWL MINI DMO 1", "BWL MINI DMO 1"]);
   });
+
+  it("app receipt: name, qty and price on separate lines (real Shopee scan)", () => {
+    const text = `LocknLock Feelbuy Indonesia
+DISKON KHUSUS LIVE 50% Tonton Sekarang
+P| is LocknLock Round Food Container 1.9L...
+or —- x2
+2
+iG Rp91.000 Rp63.750
+Total Pesanan: Rp123.325
+Dengan VIP, kamu sudah hemat Rp8.500.`;
+    expect(parseItems(text)).toEqual(["LocknLock Round Food Container 1.9L x2"]);
+    expect(parseReceiptTotal(text)).toBe(123325);
+  });
 });

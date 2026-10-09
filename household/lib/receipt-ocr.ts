@@ -94,21 +94,46 @@ export function parseMerchant(input: string | OcrLine[]): string | null {
 // A price column value: 20,000.00 / 29.000 / 0.00
 const PRICE_RE = /\d{1,3}(?:[.,]\d{3})*[.,]\d{2}(?!\d)|\d{1,3}(?:[.,]\d{3})+(?!\d)/;
 
-// Item lines sit above the total: "<name> <qty> <price> ..." → "<name> <qty>".
+const trimJunk = (s: string) => s.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "").replace(/\s+/g, " ");
+// A real word, not OCR noise from icons/thumbnails ("iG", "P|", "or").
+const hasWord = (s: string) => /[A-Za-z]{3,}/.test(s);
+const QTY_RE = /(?:^|\s)[x×]\s?(\d{1,3})\s*$/i;
+
+// Item lines sit above the total.
+// Paper receipts: "<name> <qty> <price> ..." on one line → "<name> <qty>".
+// App receipts (Shopee etc.): name, "x2" and "Rp63.750" on separate lines → "<name> x2".
 export function parseItems(text: string): string[] {
   const items: string[] = [];
+  let pendingName: string | null = null;
+  let pendingQty: string | null = null;
   for (const raw of text.split(/\r?\n/)) {
     const line = normalizeLine(raw.trim());
     if (!line) continue;
     if ((TOTAL.test(line) || STRONG_TOTAL.test(line)) && !/SUB\s*-?\s*TOTAL/i.test(line)) break;
     if (EXCLUDE.test(line)) continue;
     const m = PRICE_RE.exec(line);
-    if (!m) continue;
-    const name = line
-      .slice(0, m.index)
-      .replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, "")
-      .replace(/\s+/g, " ");
-    if ((name.match(/[A-Za-z]/g) ?? []).length >= 2) items.push(name);
+    if (!m) {
+      const qty = QTY_RE.exec(line);
+      if (qty) {
+        pendingQty = qty[1];
+        continue;
+      }
+      const letters = (line.match(/[A-Za-z]/g) ?? []).length;
+      if (letters >= 5 && letters / line.replace(/\s/g, "").length >= 0.6) {
+        // Drop leading OCR noise tokens, then a trailing ellipsis from truncated names.
+        const words = line.split(/\s+/);
+        while (words.length && !hasWord(words[0])) words.shift();
+        pendingName = trimJunk(words.join(" ").replace(/(\.{2,}|…)$/, ""));
+        pendingQty = null;
+      }
+      continue;
+    }
+    const name = trimJunk(line.slice(0, m.index).replace(/Rp\s*$/i, ""));
+    if (hasWord(name)) items.push(name);
+    else if (pendingName) items.push(pendingQty ? `${pendingName} x${pendingQty}` : pendingName);
+    else continue;
+    pendingName = null;
+    pendingQty = null;
   }
   return items;
 }
